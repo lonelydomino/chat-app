@@ -16,6 +16,8 @@ export async function connectMongoDB() {
     return mongoConnection;
   } catch (error) {
     console.error('MongoDB connection error:', error);
+    console.error('Please make sure MongoDB is running on your system');
+    console.error('You can start MongoDB with: mongod');
     throw error;
   }
 }
@@ -36,6 +38,8 @@ export async function connectRedis() {
     return redisClient;
   } catch (error) {
     console.error('Redis connection error:', error);
+    console.error('Please make sure Redis is running on your system');
+    console.error('You can start Redis with: redis-server');
     throw error;
   }
 }

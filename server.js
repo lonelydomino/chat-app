@@ -14,9 +14,12 @@ const handle = app.getRequestHandler()
 
 app.prepare().then(async () => {
   try {
+    console.log('Connecting to databases...')
     // Connect to databases
     await connectMongoDB()
+    console.log('MongoDB connected')
     await connectRedis()
+    console.log('Redis connected')
 
     // Create HTTP server
     const server = createServer(async (req, res) => {
@@ -31,15 +34,19 @@ app.prepare().then(async () => {
     })
 
     // Initialize Socket.io
+    console.log('Initializing Socket.io...')
     initializeSocket(server)
+    console.log('Socket.io initialized')
 
     // Start server
     server.listen(port, (err) => {
       if (err) throw err
       console.log(`> Ready on http://${hostname}:${port}`)
+      console.log('> Socket.io server is running')
     })
   } catch (error) {
     console.error('Failed to start server:', error)
+    console.error('Make sure MongoDB and Redis are running')
     process.exit(1)
   }
 }) 

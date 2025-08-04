@@ -3,11 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "node server.js",
     "build": "next build",
-    "start": "next start",
+    "start": "NODE_ENV=production node server.js",
     "lint": "next lint",
-    "setup": "node setup.js"
+    "setup": "node setup.js",
+    "troubleshoot": "node troubleshoot.js"
   },
   "dependencies": {
     "next": "14.0.4",
