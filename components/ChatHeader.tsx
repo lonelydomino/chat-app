@@ -1,0 +1,167 @@
+'use client'
+
+import { useState } from 'react'
+import { useAuth } from '@/contexts/AuthContext'
+import { 
+  PhoneIcon, 
+  VideoCameraIcon, 
+  DotsVerticalIcon,
+  UserGroupIcon,
+  UserIcon
+} from '@heroicons/react/outline'
+
+interface Chat {
+  _id: string
+  name?: string
+  type: 'direct' | 'group'
+  participants: Array<{
+    _id: string
+    username: string
+    avatar?: string
+    status: 'online' | 'offline' | 'away'
+    lastSeen: string
+  }>
+  admins: Array<{
+    _id: string
+    username: string
+  }>
+  lastMessage?: {
+    content: string
+    sender: {
+      _id: string
+      username: string
+      avatar?: string
+    }
+    timestamp: string
+    type: 'text' | 'file' | 'voice' | 'image'
+  }
+  unreadCount: number
+  createdAt: string
+  updatedAt: string
+}
+
+interface ChatHeaderProps {
+  chat: Chat
+  onVideoCall: () => void
+}
+
+export default function ChatHeader({ chat, onVideoCall }: ChatHeaderProps) {
+  const { user } = useAuth()
+  const [showMenu, setShowMenu] = useState(false)
+
+  const getChatDisplayName = () => {
+    if (chat.type === 'group') {
+      return chat.name || 'Group Chat'
+    } else {
+      const otherParticipant = chat.participants.find(p => p._id !== user?._id)
+      return otherParticipant?.username || 'Unknown User'
+    }
+  }
+
+  const getChatAvatar = () => {
+    if (chat.type === 'group') {
+      return (
+        <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+          <UserGroupIcon className="w-5 h-5 text-white" />
+        </div>
+      )
+    } else {
+      const otherParticipant = chat.participants.find(p => p._id !== user?._id)
+      return (
+        <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
+          <UserIcon className="w-5 h-5 text-gray-600" />
+        </div>
+      )
+    }
+  }
+
+  const getStatusText = () => {
+    if (chat.type === 'group') {
+      return `${chat.participants.length} members`
+    } else {
+      const otherParticipant = chat.participants.find(p => p._id !== user?._id)
+      if (otherParticipant?.status === 'online') {
+        return 'Online'
+      } else if (otherParticipant?.status === 'away') {
+        return 'Away'
+      } else {
+        return 'Offline'
+      }
+    }
+  }
+
+  const getStatusColor = () => {
+    if (chat.type === 'group') return 'text-gray-500'
+    
+    const otherParticipant = chat.participants.find(p => p._id !== user?._id)
+    switch (otherParticipant?.status) {
+      case 'online':
+        return 'text-green-500'
+      case 'away':
+        return 'text-yellow-500'
+      default:
+        return 'text-gray-500'
+    }
+  }
+
+  return (
+    <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white">
+      <div className="flex items-center space-x-3">
+        {getChatAvatar()}
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900">
+            {getChatDisplayName()}
+          </h2>
+          <p className={`text-sm ${getStatusColor()}`}>
+            {getStatusText()}
+          </p>
+        </div>
+      </div>
+
+      <div className="flex items-center space-x-2">
+        <button
+          onClick={onVideoCall}
+          className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+          title="Video call"
+        >
+          <VideoCameraIcon className="w-5 h-5" />
+        </button>
+        
+        <button
+          className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-full transition-colors"
+          title="Voice call"
+        >
+          <PhoneIcon className="w-5 h-5" />
+        </button>
+
+        <div className="relative">
+          <button
+            onClick={() => setShowMenu(!showMenu)}
+            className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-full transition-colors"
+          >
+            <DotsVerticalIcon className="w-5 h-5" />
+          </button>
+
+          {showMenu && (
+            <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 border border-gray-200">
+              <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                View profile
+              </button>
+              <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                Mute notifications
+              </button>
+              <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                Clear chat
+              </button>
+              {chat.type === 'group' && (
+                <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                  Group settings
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+} 
