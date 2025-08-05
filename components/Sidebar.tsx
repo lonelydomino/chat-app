@@ -5,12 +5,12 @@ import { useSocket } from '@/contexts/SocketContext'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   PlusIcon, 
-  LogoutIcon, 
+  ArrowRightOnRectangleIcon as LogoutIcon, 
   UserIcon, 
-  ChatIcon,
+  ChatBubbleLeftRightIcon as ChatIcon,
   UserGroupIcon,
-  WifiIcon,
-  WifiOffIcon
+  SignalIcon as WifiIcon,
+  SignalSlashIcon as WifiOffIcon
 } from '@heroicons/react/24/outline'
 
 interface User {

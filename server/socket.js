@@ -16,10 +16,8 @@ async function updateUserStatus(userId, status) {
 
     // Store in Redis for quick access
     const redis = await getRedisClient();
-    await redis.hSet(`user:${userId}`, {
-      status,
-      lastSeen: new Date().toISOString()
-    });
+    await redis.hSet(`user:${userId}`, 'status', status);
+    await redis.hSet(`user:${userId}`, 'lastSeen', new Date().toISOString());
   } catch (error) {
     console.error('Error updating user status:', error);
   }
