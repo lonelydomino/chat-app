@@ -8,7 +8,7 @@ import {
   DotsVerticalIcon,
   UserGroupIcon,
   UserIcon
-} from '@heroicons/react/outline'
+} from '@heroicons/react/24/outline'
 
 interface Chat {
   _id: string

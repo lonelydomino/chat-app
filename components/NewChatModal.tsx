@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSocket } from '@/contexts/SocketContext'
 import { useAuth } from '@/contexts/AuthContext'
-import { XIcon, UserIcon, UserGroupIcon } from '@heroicons/react/outline'
+import { XMarkIcon as XIcon, UserIcon, UserGroupIcon } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
 
 interface NewChatModalProps {

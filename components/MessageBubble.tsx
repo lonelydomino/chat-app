@@ -8,7 +8,7 @@ import {
   PauseIcon,
   DownloadIcon,
   EyeIcon
-} from '@heroicons/react/outline'
+} from '@heroicons/react/24/outline'
 
 interface Message {
   _id: string

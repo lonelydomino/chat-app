@@ -9,7 +9,7 @@ import {
   StopIcon,
   SendIcon,
   EmojiHappyIcon
-} from '@heroicons/react/outline'
+} from '@heroicons/react/24/outline'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function MessageInput() {
