@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectMongoDB } from '@/lib/database';
-import User from '@/models/User';
+import User from '@/models/User.js';
 import jwt from 'jsonwebtoken';
 
 export async function POST(request: NextRequest) {

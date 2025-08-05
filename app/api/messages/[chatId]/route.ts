@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectMongoDB } from '@/lib/database';
-import Message from '@/models/Message';
-import Chat from '@/models/Chat';
+import Message from '@/models/Message.js';
+import Chat from '@/models/Chat.js';
 import jwt from 'jsonwebtoken';
 
 export async function GET(
