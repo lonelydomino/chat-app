@@ -1,10 +1,10 @@
 const mongoose = require('mongoose');
 
 // Check if models are already compiled
-const models = {};
+let models = {};
 
 // User Model
-if (!models.User) {
+if (!mongoose.models.User) {
   const bcrypt = require('bcryptjs');
   
   const userSchema = new mongoose.Schema({
@@ -64,10 +64,12 @@ if (!models.User) {
   };
 
   models.User = mongoose.model('User', userSchema);
+} else {
+  models.User = mongoose.models.User;
 }
 
 // Chat Model
-if (!models.Chat) {
+if (!mongoose.models.Chat) {
   const chatSchema = new mongoose.Schema({
     name: {
       type: String,
@@ -117,10 +119,12 @@ if (!models.Chat) {
   chatSchema.index({ 'lastMessage.timestamp': -1 });
 
   models.Chat = mongoose.model('Chat', chatSchema);
+} else {
+  models.Chat = mongoose.models.Chat;
 }
 
 // Message Model
-if (!models.Message) {
+if (!mongoose.models.Message) {
   const CryptoJS = require('crypto-js');
 
   const messageSchema = new mongoose.Schema({
@@ -188,6 +192,8 @@ if (!models.Message) {
   messageSchema.index({ 'readBy': 1 });
 
   models.Message = mongoose.model('Message', messageSchema);
+} else {
+  models.Message = mongoose.models.Message;
 }
 
 module.exports = models; 
