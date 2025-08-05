@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectMongoDB } from '@/lib/database';
-import Chat from '@/models/Chat.js';
-import Message from '@/models/Message.js';
+import { Chat, Message } from '@/models/index.js';
 import jwt from 'jsonwebtoken';
 
 export async function GET(request: NextRequest) {

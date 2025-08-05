@@ -3,9 +3,7 @@ const jwt = require('jsonwebtoken');
 
 // Import database functions
 const { getRedisClient } = require('../lib/database');
-const User = require('../models/User');
-const Chat = require('../models/Chat');
-const Message = require('../models/Message');
+const { User, Chat, Message } = require('../models/index.js');
 
 async function updateUserStatus(userId, status) {
   try {
