@@ -8,7 +8,7 @@ import {
   MicrophoneIcon, 
   StopIcon,
   ArrowUpIcon,
-  EmojiHappyIcon
+  FaceSmileIcon
 } from '@heroicons/react/24/outline'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -159,7 +159,7 @@ export default function MessageInput() {
           
           {/* Emoji button */}
           <button className="absolute right-2 bottom-2 p-1 text-gray-400 hover:text-gray-600">
-            <EmojiHappyIcon className="w-4 h-4" />
+                            <FaceSmileIcon className="w-4 h-4" />
           </button>
         </div>
 

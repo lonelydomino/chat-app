@@ -6,7 +6,7 @@ import {
   PaperClipIcon, 
   PlayIcon, 
   PauseIcon,
-  DownloadIcon,
+  ArrowDownTrayIcon,
   EyeIcon
 } from '@heroicons/react/24/outline'
 
@@ -79,7 +79,7 @@ export default function MessageBubble({ message, isOwn, showTime, time }: Messag
               onClick={() => window.open(message.fileUrl, '_blank')}
               className="p-1 text-gray-500 hover:text-blue-600 transition-colors"
             >
-              <DownloadIcon className="w-4 h-4" />
+              <ArrowDownTrayIcon className="w-4 h-4" />
             </button>
           </div>
         )

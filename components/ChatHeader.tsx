@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { 
   PhoneIcon, 
   VideoCameraIcon, 
-  DotsVerticalIcon,
+  EllipsisVerticalIcon,
   UserGroupIcon,
   UserIcon
 } from '@heroicons/react/24/outline'
@@ -139,7 +139,7 @@ export default function ChatHeader({ chat, onVideoCall }: ChatHeaderProps) {
             onClick={() => setShowMenu(!showMenu)}
             className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-full transition-colors"
           >
-            <DotsVerticalIcon className="w-5 h-5" />
+                            <EllipsisVerticalIcon className="w-5 h-5" />
           </button>
 
           {showMenu && (
