@@ -3,37 +3,12 @@
 import { useState, useEffect } from 'react'
 import AuthForm from '@/components/AuthForm'
 import ChatInterface from '@/components/ChatInterface'
-import { AuthProvider } from '@/contexts/AuthContext'
+import { AuthProvider, useAuth } from '@/contexts/AuthContext'
 import { SocketProvider } from '@/contexts/SocketContext'
 import { motion } from 'framer-motion'
 
-export default function Home() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    try {
-      console.log('Checking authentication...')
-      // Check if user is authenticated
-      const token = localStorage.getItem('token')
-      const user = localStorage.getItem('user')
-      
-      console.log('Token exists:', !!token)
-      console.log('User exists:', !!user)
-      
-      if (token && user) {
-        console.log('User is authenticated')
-        setIsAuthenticated(true)
-      } else {
-        console.log('User is not authenticated')
-      }
-    } catch (error) {
-      console.error('Error checking authentication:', error)
-    } finally {
-      console.log('Setting loading to false')
-      setIsLoading(false)
-    }
-  }, [])
+function AppContent() {
+  const { user, isLoading } = useAuth()
 
   if (isLoading) {
     return (
@@ -55,15 +30,21 @@ export default function Home() {
   }
 
   return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      {user ? (
+        <ChatInterface />
+      ) : (
+        <LandingPage />
+      )}
+    </div>
+  )
+}
+
+export default function Home() {
+  return (
     <AuthProvider>
       <SocketProvider>
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-          {isAuthenticated ? (
-            <ChatInterface />
-          ) : (
-            <LandingPage />
-          )}
-        </div>
+        <AppContent />
       </SocketProvider>
     </AuthProvider>
   )
