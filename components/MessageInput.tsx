@@ -7,7 +7,7 @@ import {
   PaperClipIcon, 
   MicrophoneIcon, 
   StopIcon,
-  SendIcon,
+  ArrowUpIcon,
   EmojiHappyIcon
 } from '@heroicons/react/24/outline'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -170,7 +170,7 @@ export default function MessageInput() {
           className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           title="Send message"
         >
-          <SendIcon className="w-5 h-5" />
+                          <ArrowUpIcon className="w-5 h-5" />
         </button>
       </div>
 
