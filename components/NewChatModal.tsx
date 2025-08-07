@@ -32,11 +32,11 @@ export default function NewChatModal({ onClose }: NewChatModalProps) {
 
   useEffect(() => {
     // In a real app, you'd fetch users from an API
-    // For now, we'll use mock data
+    // For now, we'll use mock data with proper ObjectIds
     setUsers([
-      { _id: '1', username: 'john_doe', email: 'john@example.com', status: 'online' },
-      { _id: '2', username: 'jane_smith', email: 'jane@example.com', status: 'offline' },
-      { _id: '3', username: 'bob_wilson', email: 'bob@example.com', status: 'away' },
+      { _id: '68940b28a3161935e52cfb2e', username: 'john_doe', email: 'john@example.com', status: 'online' },
+      { _id: '68940b28a3161935e52cfb2f', username: 'jane_smith', email: 'jane@example.com', status: 'offline' },
+      { _id: '68940b28a3161935e52cfb30', username: 'bob_wilson', email: 'bob@example.com', status: 'away' },
     ])
   }, [])
 
