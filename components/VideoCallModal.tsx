@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSocket } from '@/contexts/SocketContext'
 import { useAuth } from '@/contexts/AuthContext'
-import { XMarkIcon as XIcon, PhoneIcon, PhoneMissedCallIcon } from '@heroicons/react/24/outline'
+import { XMarkIcon as XIcon, PhoneIcon, PhoneXMarkIcon } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
 
 interface Chat {
@@ -325,7 +325,7 @@ export default function VideoCallModal({ chat, onClose }: VideoCallModalProps) {
             {callStatus === 'ended' && (
               <div className="text-center">
                 <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <PhoneMissedCallIcon className="w-12 h-12 text-gray-600" />
+                  <PhoneXMarkIcon className="w-12 h-12 text-gray-600" />
                 </div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
                   Call Ended
