@@ -126,8 +126,14 @@ function initializeSocket(server) {
           .populate('sender', 'username avatar')
           .populate('replyTo');
 
+        // Decrypt the message content before sending
+        const decryptedMessage = {
+          ...populatedMessage.toObject(),
+          content: populatedMessage.decryptContent()
+        };
+
         io.to(`chat:${messageData.chatId}`).emit('new-message', {
-          message: populatedMessage,
+          message: decryptedMessage,
           chat: chat
         });
 
