@@ -180,6 +180,31 @@ function initializeSocket(server) {
       });
     });
 
+    // Handle chat deletion
+    socket.on('chat-deleted', async (data) => {
+      try {
+        const { chatId } = data;
+        
+        // Verify the chat exists and user has permission
+        const chat = await Chat.findOne({ _id: chatId, participants: socket.userId });
+        if (!chat) {
+          return;
+        }
+        
+        // Broadcast to all participants in the chat
+        socket.to(`chat:${chatId}`).emit('chat-deleted', { chatId });
+        
+        // Remove all users from the chat room
+        const socketsInRoom = await io.in(`chat:${chatId}`).fetchSockets();
+        socketsInRoom.forEach(s => {
+          s.leave(`chat:${chatId}`);
+        });
+        
+      } catch (error) {
+        console.error('Error handling chat deletion:', error);
+      }
+    });
+
     // Handle video call signaling
     socket.on('video-call-request', (data) => {
       io.to(`user:${data.targetUserId}`).emit('video-call-incoming', {

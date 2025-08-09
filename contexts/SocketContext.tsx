@@ -72,6 +72,7 @@ interface SocketContextType {
   fetchChats: () => Promise<void>
   fetchMessages: (chatId: string, page?: number) => Promise<void>
   setCurrentChat: (chat: Chat | null) => void
+  deleteChat: (chatId: string) => Promise<void>
 }
 
 const SocketContext = createContext<SocketContextType | undefined>(undefined)
@@ -145,6 +146,21 @@ export function SocketProvider({ children }: { children: ReactNode }) {
               : prev.filter(id => id !== data.userId)
           )
         }
+      })
+
+      newSocket.on('chat-deleted', (data: { chatId: string }) => {
+        console.log('📨 Chat deleted by another user:', data.chatId)
+        
+        // Remove chat from local state
+        setChats(prev => prev.filter(chat => chat._id !== data.chatId))
+        
+        // Clear current chat if it's the one being deleted
+        if (currentChat?._id === data.chatId) {
+          setCurrentChat(null)
+          setMessages([])
+        }
+        
+        toast.info('Chat was deleted')
       })
 
       newSocket.on('messages-read', (data: { userId: string; messageIds: string[] }) => {
@@ -306,6 +322,42 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     }
   }, [token])
 
+  const deleteChat = async (chatId: string) => {
+    try {
+      const response = await fetch(`/api/chats/${chatId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data.error)
+      }
+
+      // Remove chat from local state
+      setChats(prev => prev.filter(chat => chat._id !== chatId))
+      
+      // Clear current chat if it's the one being deleted
+      if (currentChat?._id === chatId) {
+        setCurrentChat(null)
+        setMessages([])
+      }
+
+      // Emit socket event to notify other participants
+      if (socket) {
+        socket.emit('chat-deleted', { chatId })
+      }
+
+      toast.success('Chat deleted successfully')
+    } catch (error) {
+      console.error('Error deleting chat:', error)
+      toast.error(error instanceof Error ? error.message : 'Failed to delete chat')
+      throw error
+    }
+  }
+
   const value = {
     socket,
     isConnected,
@@ -321,7 +373,8 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     createChat,
     fetchChats,
     fetchMessages,
-    setCurrentChat
+    setCurrentChat,
+    deleteChat
   }
 
   return (

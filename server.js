@@ -14,8 +14,8 @@ const handle = app.getRequestHandler()
 
 app.prepare().then(async () => {
   try {
+    console.log('Starting server...')
     console.log('Connecting to databases...')
-    // Connect to databases
     await connectMongoDB()
     console.log('MongoDB connected')
     await connectRedis()
@@ -35,8 +35,13 @@ app.prepare().then(async () => {
 
     // Initialize Socket.io
     console.log('Initializing Socket.io...')
-    initializeSocket(server)
-    console.log('Socket.io initialized')
+    try {
+      initializeSocket(server)
+      console.log('Socket.io initialized')
+    } catch (error) {
+      console.error('Socket.io initialization failed:', error)
+      throw error
+    }
 
     // Start server
     server.listen(port, (err) => {
@@ -49,4 +54,18 @@ app.prepare().then(async () => {
     console.error('Make sure MongoDB and Redis are running')
     process.exit(1)
   }
+}).catch((error) => {
+  console.error('Failed to prepare Next.js app:', error)
+  process.exit(1)
+})
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error)
+  process.exit(1)
+})
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason)
+  process.exit(1)
 }) 

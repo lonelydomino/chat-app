@@ -2,13 +2,16 @@
 
 import { useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
+import { useSocket } from '@/contexts/SocketContext'
 import { 
   PhoneIcon, 
   VideoCameraIcon, 
   EllipsisVerticalIcon,
   UserGroupIcon,
-  UserIcon
+  UserIcon,
+  TrashIcon
 } from '@heroicons/react/24/outline'
+import { toast } from 'react-hot-toast'
 
 interface Chat {
   _id: string
@@ -47,7 +50,9 @@ interface ChatHeaderProps {
 
 export default function ChatHeader({ chat, onVideoCall }: ChatHeaderProps) {
   const { user } = useAuth()
+  const { deleteChat } = useSocket()
   const [showMenu, setShowMenu] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const getChatDisplayName = () => {
     if (chat.type === 'group') {
@@ -101,6 +106,24 @@ export default function ChatHeader({ chat, onVideoCall }: ChatHeaderProps) {
         return 'text-yellow-500'
       default:
         return 'text-gray-500'
+    }
+  }
+
+  const handleDeleteChat = async () => {
+    const chatName = getChatDisplayName()
+    
+    if (window.confirm(`Are you sure you want to delete the chat with ${chatName}? This action cannot be undone.`)) {
+      setIsDeleting(true)
+      setShowMenu(false)
+      
+      try {
+        await deleteChat(chat._id)
+      } catch (error) {
+        // Error is already handled in deleteChat function
+        console.error('Delete chat error:', error)
+      } finally {
+        setIsDeleting(false)
+      }
     }
   }
 
@@ -158,6 +181,15 @@ export default function ChatHeader({ chat, onVideoCall }: ChatHeaderProps) {
                   Group settings
                 </button>
               )}
+              <hr className="my-1" />
+              <button 
+                onClick={handleDeleteChat}
+                disabled={isDeleting}
+                className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+              >
+                <TrashIcon className="w-4 h-4" />
+                <span>{isDeleting ? 'Deleting...' : 'Delete chat'}</span>
+              </button>
             </div>
           )}
         </div>
