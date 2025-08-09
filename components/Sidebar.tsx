@@ -72,9 +72,21 @@ export default function Sidebar({ onNewChat, onLogout, user, isConnected }: Side
     
     if (chat.type === 'direct') {
       const otherParticipant = chat.participants.find(p => p._id !== user._id)
-      return otherParticipant?.username.toLowerCase().includes(searchTerm.toLowerCase())
+      const matches = otherParticipant?.username.toLowerCase().includes(searchTerm.toLowerCase())
+      console.log('🔍 Search filter:', { 
+        searchTerm, 
+        username: otherParticipant?.username, 
+        matches 
+      })
+      return matches
     } else {
-      return chat.name?.toLowerCase().includes(searchTerm.toLowerCase())
+      const matches = chat.name?.toLowerCase().includes(searchTerm.toLowerCase())
+      console.log('🔍 Group search filter:', { 
+        searchTerm, 
+        groupName: chat.name, 
+        matches 
+      })
+      return matches
     }
   })
 

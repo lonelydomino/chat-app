@@ -37,6 +37,7 @@ export default function NewChatModal({ onClose }: NewChatModalProps) {
       { _id: '68940b28a3161935e52cfb2e', username: 'john_doe', email: 'john@example.com', status: 'online' },
       { _id: '68940b28a3161935e52cfb2f', username: 'jane_smith', email: 'jane@example.com', status: 'offline' },
       { _id: '68940b28a3161935e52cfb30', username: 'bob_wilson', email: 'bob@example.com', status: 'away' },
+      { _id: '68940b28a3161935e52cfb31', username: 'milo', email: 'milo@example.com', status: 'online' },
     ])
   }, [])
 
