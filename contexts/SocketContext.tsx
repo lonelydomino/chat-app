@@ -1,5 +1,7 @@
 'use client'
 
+console.log('🔥 SocketContext.tsx loaded!')
+
 import React, { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react'
 import { io, Socket } from 'socket.io-client'
 import { useAuth } from './AuthContext'

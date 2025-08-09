@@ -1,5 +1,7 @@
 'use client'
 
+console.log('🔥 page.tsx loaded!')
+
 import { useState, useEffect } from 'react'
 import AuthForm from '@/components/AuthForm'
 import ChatInterface from '@/components/ChatInterface'
