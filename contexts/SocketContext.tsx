@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+import React, { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react'
 import { io, Socket } from 'socket.io-client'
 import { useAuth } from './AuthContext'
 import toast from 'react-hot-toast'
@@ -213,7 +213,9 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     return data.chat
   }
 
-  const fetchChats = async () => {
+  const fetchChats = useCallback(async () => {
+    if (!token) return
+    
     try {
       const response = await fetch('/api/chats', {
         headers: {
@@ -231,7 +233,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
       console.error('Error fetching chats:', error)
       toast.error('Failed to fetch chats')
     }
-  }
+  }, [token])
 
   const fetchMessages = async (chatId: string, page: number = 1) => {
     try {
