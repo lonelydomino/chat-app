@@ -102,6 +102,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
       })
 
       newSocket.on('new-message', (data: { message: Message; chat: Chat }) => {
+        console.log('Received new-message:', data)
         setMessages(prev => [...prev, data.message])
         
         // Update chat's last message
@@ -160,13 +161,24 @@ export function SocketProvider({ children }: { children: ReactNode }) {
   }, [token, user])
 
   const sendMessage = (content: string, type: 'text' | 'file' | 'voice' | 'image' = 'text', fileData?: any) => {
+    console.log('sendMessage called:', { content, type, fileData, socket: !!socket, currentChat: !!currentChat })
+    
     if (socket && currentChat) {
+      console.log('Emitting send-message:', {
+        chatId: currentChat._id,
+        content,
+        type,
+        ...fileData
+      })
+      
       socket.emit('send-message', {
         chatId: currentChat._id,
         content,
         type,
         ...fileData
       })
+    } else {
+      console.log('Cannot send message:', { socket: !!socket, currentChat: !!currentChat })
     }
   }
 
