@@ -244,26 +244,40 @@ export function SocketProvider({ children }: { children: ReactNode }) {
   }, [token])
 
   const fetchMessages = async (chatId: string, page: number = 1) => {
+    console.log('🔍 fetchMessages called:', { chatId, page, token: !!token })
+    
     try {
+      console.log('🌐 Making API request to:', `/api/messages/${chatId}?page=${page}`)
+      
       const response = await fetch(`/api/messages/${chatId}?page=${page}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       })
 
+      console.log('📡 API response status:', response.status)
+      
       const data = await response.json()
+      console.log('📦 API response data:', data)
+      
       if (!response.ok) {
+        console.error('❌ API error:', data.error)
         throw new Error(data.error)
       }
 
+      console.log('📨 Setting messages:', data.messages?.length || 0, 'messages')
+      
       if (page === 1) {
         setMessages(data.messages)
       } else {
         setMessages(prev => [...data.messages, ...prev])
       }
+      
+      console.log('✅ fetchMessages completed successfully')
     } catch (error) {
-      console.error('Error fetching messages:', error)
+      console.error('❌ fetchMessages error:', error)
       toast.error('Failed to fetch messages')
+      throw error // Re-throw so ChatArea can catch it
     }
   }
 

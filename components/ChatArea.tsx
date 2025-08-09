@@ -13,15 +13,38 @@ interface ChatAreaProps {
 }
 
 export default function ChatArea({ onVideoCall }: ChatAreaProps) {
+  console.log('🔥 ChatArea rendering')
+  
   const { currentChat, messages, joinChat, leaveChat, fetchMessages } = useSocket()
   const { user } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
 
+  console.log('💬 ChatArea state:', { 
+    currentChat: !!currentChat, 
+    chatId: currentChat?._id, 
+    messagesCount: messages.length, 
+    isLoading 
+  })
+
   useEffect(() => {
+    console.log('🔄 ChatArea useEffect - currentChat changed:', !!currentChat)
     if (currentChat) {
+      console.log('🚀 Starting chat load process for:', currentChat._id)
       setIsLoading(true)
+      
+      console.log('🏠 Joining chat room')
       joinChat(currentChat._id)
-      fetchMessages(currentChat._id).finally(() => setIsLoading(false))
+      
+      console.log('📨 Fetching messages')
+      fetchMessages(currentChat._id)
+        .then(() => {
+          console.log('✅ Messages fetched successfully')
+          setIsLoading(false)
+        })
+        .catch((error) => {
+          console.error('❌ Error fetching messages:', error)
+          setIsLoading(false)
+        })
     }
   }, [currentChat, joinChat, fetchMessages])
 
