@@ -178,17 +178,17 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const joinChat = (chatId: string) => {
+  const joinChat = useCallback((chatId: string) => {
     if (socket) {
       socket.emit('join-chat', chatId)
     }
-  }
+  }, [socket])
 
-  const leaveChat = (chatId: string) => {
+  const leaveChat = useCallback((chatId: string) => {
     if (socket) {
       socket.emit('leave-chat', chatId)
     }
-  }
+  }, [socket])
 
   const setTyping = (chatId: string, isTyping: boolean) => {
     if (socket) {
@@ -243,7 +243,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     }
   }, [token])
 
-  const fetchMessages = async (chatId: string, page: number = 1) => {
+  const fetchMessages = useCallback(async (chatId: string, page: number = 1) => {
     console.log('🔍 fetchMessages called:', { chatId, page, token: !!token })
     
     try {
@@ -279,7 +279,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
       toast.error('Failed to fetch messages')
       throw error // Re-throw so ChatArea can catch it
     }
-  }
+  }, [token])
 
   const value = {
     socket,
