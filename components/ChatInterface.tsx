@@ -1,5 +1,7 @@
 'use client'
 
+console.log('🔥 ChatInterface.tsx loaded!')
+
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useSocket } from '@/contexts/SocketContext'
@@ -9,13 +11,19 @@ import NewChatModal from './NewChatModal'
 import VideoCallModal from './VideoCallModal'
 
 export default function ChatInterface() {
+  console.log('🚀 ChatInterface rendering')
+  
   const { user, logout } = useAuth()
   const { isConnected, fetchChats, currentChat } = useSocket()
   const [showNewChatModal, setShowNewChatModal] = useState(false)
   const [showVideoCallModal, setShowVideoCallModal] = useState(false)
 
+  console.log('🔍 ChatInterface state:', { user: !!user, isConnected, currentChat: !!currentChat })
+
   useEffect(() => {
+    console.log('🔄 ChatInterface useEffect - isConnected:', isConnected)
     if (isConnected) {
+      console.log('📞 Calling fetchChats')
       fetchChats()
     }
   }, [isConnected, fetchChats])

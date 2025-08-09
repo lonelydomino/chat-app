@@ -60,8 +60,12 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ onNewChat, onLogout, user, isConnected }: SidebarProps) {
+  console.log('🔥 Sidebar rendering')
+  
   const { chats, currentChat, setCurrentChat, fetchChats } = useSocket()
   const [searchTerm, setSearchTerm] = useState('')
+  
+  console.log('📋 Sidebar state:', { chats: chats.length, currentChat: !!currentChat, isConnected })
 
   const filteredChats = chats.filter(chat => {
     if (searchTerm === '') return true
