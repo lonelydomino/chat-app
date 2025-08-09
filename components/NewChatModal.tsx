@@ -29,22 +29,48 @@ export default function NewChatModal({ onClose }: NewChatModalProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [users, setUsers] = useState<User[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [isFetchingUsers, setIsFetchingUsers] = useState(false)
+  const { token } = useAuth()
+
+  const fetchUsers = async (search: string = '') => {
+    if (!token) return
+    
+    setIsFetchingUsers(true)
+    try {
+      const response = await fetch(`/api/users?search=${encodeURIComponent(search)}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data.error)
+      }
+
+      setUsers(data.users)
+    } catch (error) {
+      console.error('Error fetching users:', error)
+      toast.error('Failed to fetch users')
+    } finally {
+      setIsFetchingUsers(false)
+    }
+  }
 
   useEffect(() => {
-    // In a real app, you'd fetch users from an API
-    // For now, we'll use mock data with proper ObjectIds
-    setUsers([
-      { _id: '68940b28a3161935e52cfb2e', username: 'john_doe', email: 'john@example.com', status: 'online' },
-      { _id: '68940b28a3161935e52cfb2f', username: 'jane_smith', email: 'jane@example.com', status: 'offline' },
-      { _id: '68940b28a3161935e52cfb30', username: 'bob_wilson', email: 'bob@example.com', status: 'away' },
-      { _id: '68940b28a3161935e52cfb31', username: 'milo', email: 'milo@example.com', status: 'online' },
-    ])
-  }, [])
+    fetchUsers()
+  }, [token])
 
-  const filteredUsers = users.filter(u => 
-    u._id !== user?._id && 
-    u.username.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      fetchUsers(searchTerm)
+    }, 300) // Debounce search
+
+    return () => clearTimeout(timeoutId)
+  }, [searchTerm])
+
+  // Users are already filtered by the API, no need for client-side filtering
+  const filteredUsers = users
 
   const handleUserToggle = (userId: string) => {
     if (chatType === 'direct') {
@@ -167,7 +193,13 @@ export default function NewChatModal({ onClose }: NewChatModalProps) {
 
             {/* User list */}
             <div className="max-h-60 overflow-y-auto space-y-2">
-              {filteredUsers.map(user => (
+              {isFetchingUsers ? (
+                <div className="text-center text-gray-500 py-4">
+                  <div className="animate-spin rounded-full h-6 w-6 border-2 border-blue-600 border-t-transparent mx-auto mb-2"></div>
+                  Loading users...
+                </div>
+              ) : (
+                filteredUsers.map(user => (
                 <button
                   key={user._id}
                   onClick={() => handleUserToggle(user._id)}
@@ -191,10 +223,11 @@ export default function NewChatModal({ onClose }: NewChatModalProps) {
                     }`}></div>
                   </div>
                 </button>
-              ))}
+                ))
+              )}
             </div>
 
-            {filteredUsers.length === 0 && (
+            {!isFetchingUsers && filteredUsers.length === 0 && (
               <div className="text-center text-gray-500 py-4">
                 No users found
               </div>
