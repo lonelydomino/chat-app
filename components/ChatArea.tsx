@@ -36,15 +36,19 @@ export default function ChatArea({ onVideoCall }: ChatAreaProps) {
       joinChat(currentChat._id)
       
       console.log('📨 Fetching messages')
-      fetchMessages(currentChat._id)
-        .then(() => {
-          console.log('✅ Messages fetched successfully')
-          setIsLoading(false)
-        })
-        .catch((error) => {
-          console.error('❌ Error fetching messages:', error)
-          setIsLoading(false)
-        })
+              fetchMessages(currentChat._id)
+          .then(() => {
+            console.log('✅ Messages fetched successfully')
+            setIsLoading(false)
+          })
+          .catch((error) => {
+            console.error('❌ Error fetching messages:', error)
+            // Don't show error toast for 404s - they're handled in fetchMessages
+            if (!error.message?.includes('Chat not found')) {
+              // Only show error for non-404 errors
+            }
+            setIsLoading(false)
+          })
     }
   }, [currentChat, joinChat, fetchMessages])
 

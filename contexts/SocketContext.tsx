@@ -85,6 +85,23 @@ export function SocketProvider({ children }: { children: ReactNode }) {
   const [messages, setMessages] = useState<Message[]>([])
   const [typingUsers, setTypingUsers] = useState<string[]>([])
 
+  // Reset state when user changes
+  useEffect(() => {
+    if (!token || !user) {
+      // Clear all state when user logs out
+      setChats([])
+      setCurrentChat(null)
+      setMessages([])
+      setTypingUsers([])
+      setIsConnected(false)
+      if (socket) {
+        socket.disconnect()
+        setSocket(null)
+      }
+      return
+    }
+  }, [token, user, socket])
+
   // Initialize socket connection
   useEffect(() => {
     if (token && user) {
@@ -262,6 +279,14 @@ export function SocketProvider({ children }: { children: ReactNode }) {
       
       if (!response.ok) {
         console.error('❌ API error:', data.error)
+        
+        // If chat not found, clear the current chat
+        if (response.status === 404) {
+          console.log('🧹 Chat not found - clearing currentChat')
+          setCurrentChat(null)
+          return // Don't throw error, just return silently
+        }
+        
         throw new Error(data.error)
       }
 
