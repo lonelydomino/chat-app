@@ -86,7 +86,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
   // Initialize socket connection
   useEffect(() => {
     if (token && user) {
-      const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001'
+      const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3000'
       const newSocket = io(socketUrl, {
         auth: { token }
       })
