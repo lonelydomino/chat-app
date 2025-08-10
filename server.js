@@ -1,8 +1,8 @@
 const { createServer } = require('http')
 const { parse } = require('url')
 const next = require('next')
-const { initializeSocket } = require('./server/socket')
-const { connectMongoDB, connectRedis } = require('./lib/database')
+const { initializeSocket } = require('./server/socket.js')
+const { connectMongoDB, connectRedis } = require('./lib/database.js')
 
 const dev = process.env.NODE_ENV !== 'production'
 const hostname = 'localhost'

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectMongoDB } from '@/lib/database';
-import { Chat, Message } from '@/models/index.js';
+import { Chat, Message } from '@/models/index';
 import jwt from 'jsonwebtoken';
 
 export async function DELETE(

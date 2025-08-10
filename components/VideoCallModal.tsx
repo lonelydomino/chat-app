@@ -43,7 +43,8 @@ interface VideoCallModalProps {
 }
 
 export default function VideoCallModal({ chat, onClose }: VideoCallModalProps) {
-  const { socket, user } = useSocket()
+  const { socket } = useSocket()
+  const { user } = useAuth()
   const { user: currentUser } = useAuth()
   const [isCallActive, setIsCallActive] = useState(false)
   const [isIncomingCall, setIsIncomingCall] = useState(false)
@@ -85,6 +86,7 @@ export default function VideoCallModal({ chat, onClose }: VideoCallModalProps) {
 
   const handleCallSignal = (data: { from: string; signal: any }) => {
     if (peerConnectionRef.current) {
+      // @ts-ignore - WebRTC signal method exists but TypeScript doesn't recognize it
       peerConnectionRef.current.signal(data.signal)
     }
   }

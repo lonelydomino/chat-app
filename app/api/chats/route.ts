@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectMongoDB } from '@/lib/database';
-import { Chat, Message } from '@/models/index.js';
+import { Chat, Message } from '@/models/index';
 import jwt from 'jsonwebtoken';
 
 export async function GET(request: NextRequest) {
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
 
     // Get unread message counts for each chat
     const chatsWithUnreadCounts = await Promise.all(
-      chats.map(async (chat) => {
+      chats.map(async (chat: any) => {
         const unreadCount = await Message.countDocuments({
           chatId: chat._id,
           sender: { $ne: userId },

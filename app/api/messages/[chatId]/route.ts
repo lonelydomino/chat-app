@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectMongoDB } from '@/lib/database';
-import { Message, Chat } from '@/models/index.js';
+import { Message, Chat } from '@/models/index';
 import jwt from 'jsonwebtoken';
 
 export async function GET(
@@ -46,7 +46,7 @@ export async function GET(
       .limit(limit);
 
     // Decrypt message content
-    const decryptedMessages = messages.map(message => {
+    const decryptedMessages = messages.map((message: any) => {
       const messageObj = message.toObject();
       if (messageObj.content) {
         messageObj.content = message.decryptContent();

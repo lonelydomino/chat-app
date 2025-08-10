@@ -160,7 +160,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
           setMessages([])
         }
         
-        toast.info('Chat was deleted')
+        toast('Chat was deleted', { icon: 'ℹ️' })
       })
 
       newSocket.on('messages-read', (data: { userId: string; messageIds: string[] }) => {

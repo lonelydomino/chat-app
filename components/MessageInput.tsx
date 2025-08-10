@@ -200,7 +200,7 @@ export default function MessageInput() {
               </button>
               <button
                 onClick={() => {
-                  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                  if (typeof navigator.mediaDevices?.getUserMedia === 'function') {
                     startRecording()
                   }
                 }}
