@@ -3,6 +3,8 @@ import { connectMongoDB } from '@/lib/database';
 import { Message, Chat } from '@/models/index';
 import jwt from 'jsonwebtoken';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { chatId: string } }

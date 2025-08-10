@@ -3,6 +3,8 @@ import { connectMongoDB } from '@/lib/database';
 import { User } from '@/models/index';
 import jwt from 'jsonwebtoken';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     await connectMongoDB();

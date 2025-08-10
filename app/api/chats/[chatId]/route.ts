@@ -3,6 +3,8 @@ import { connectMongoDB } from '@/lib/database';
 import { Chat, Message } from '@/models/index';
 import jwt from 'jsonwebtoken';
 
+export const dynamic = 'force-dynamic';
+
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { chatId: string } }
