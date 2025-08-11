@@ -10,6 +10,29 @@ export interface IUser extends Document {
   avatar?: string;
   status: 'online' | 'offline' | 'away';
   lastSeen: Date;
+  bio?: string;
+  displayName?: string;
+  phoneNumber?: string;
+  location?: string;
+  website?: string;
+  socialLinks?: {
+    twitter?: string;
+    linkedin?: string;
+    github?: string;
+  };
+  preferences?: {
+    theme: 'light' | 'dark' | 'auto';
+    notifications: {
+      email: boolean;
+      push: boolean;
+      sound: boolean;
+    };
+    privacy: {
+      showStatus: boolean;
+      showLastSeen: boolean;
+      allowDirectMessages: boolean;
+    };
+  };
   comparePassword(candidatePassword: string): Promise<boolean>;
   createdAt: Date;
   updatedAt: Date;
@@ -49,6 +72,69 @@ const userSchema = new Schema<IUser>({
   lastSeen: {
     type: Date,
     default: Date.now
+  },
+  bio: {
+    type: String,
+    maxlength: 500,
+    default: ''
+  },
+  displayName: {
+    type: String,
+    maxlength: 100,
+    default: ''
+  },
+  phoneNumber: {
+    type: String,
+    default: ''
+  },
+  location: {
+    type: String,
+    maxlength: 100,
+    default: ''
+  },
+  website: {
+    type: String,
+    default: ''
+  },
+  socialLinks: {
+    twitter: String,
+    linkedin: String,
+    github: String
+  },
+  preferences: {
+    theme: {
+      type: String,
+      enum: ['light', 'dark', 'auto'],
+      default: 'auto'
+    },
+    notifications: {
+      email: {
+        type: Boolean,
+        default: true
+      },
+      push: {
+        type: Boolean,
+        default: true
+      },
+      sound: {
+        type: Boolean,
+        default: true
+      }
+    },
+    privacy: {
+      showStatus: {
+        type: Boolean,
+        default: true
+      },
+      showLastSeen: {
+        type: Boolean,
+        default: true
+      },
+      allowDirectMessages: {
+        type: Boolean,
+        default: true
+      }
+    }
   }
 }, {
   timestamps: true

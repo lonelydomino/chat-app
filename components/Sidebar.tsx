@@ -10,8 +10,10 @@ import {
   ChatBubbleLeftRightIcon as ChatIcon,
   UserGroupIcon,
   SignalIcon as WifiIcon,
-  SignalSlashIcon as WifiOffIcon
+  SignalSlashIcon as WifiOffIcon,
+  Cog6ToothIcon
 } from '@heroicons/react/24/outline'
+import ProfileModal from './ProfileModal'
 
 interface User {
   _id: string
@@ -64,6 +66,7 @@ export default function Sidebar({ onNewChat, onLogout, user, isConnected }: Side
   
   const { chats, currentChat, setCurrentChat, fetchChats } = useSocket()
   const [searchTerm, setSearchTerm] = useState('')
+  const [showProfile, setShowProfile] = useState(false)
   
   console.log('📋 Sidebar state:', { chats: chats.length, currentChat: !!currentChat, isConnected })
 
@@ -265,14 +268,32 @@ export default function Sidebar({ onNewChat, onLogout, user, isConnected }: Side
               {user.email}
             </p>
           </div>
-          <button
-            onClick={onLogout}
-            className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
-          >
-            <LogoutIcon className="w-5 h-5" />
-          </button>
+          <div className="flex items-center space-x-1">
+            <button
+              onClick={() => setShowProfile(true)}
+              className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+              title="Profile Settings"
+            >
+              <Cog6ToothIcon className="w-5 h-5" />
+            </button>
+            <button
+              onClick={onLogout}
+              className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+              title="Logout"
+            >
+              <LogoutIcon className="w-5 h-5" />
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Profile Modal */}
+      {showProfile && (
+        <ProfileModal
+          onClose={() => setShowProfile(false)}
+          isOwnProfile={true}
+        />
+      )}
     </div>
   )
 } 

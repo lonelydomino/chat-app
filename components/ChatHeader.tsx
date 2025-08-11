@@ -12,6 +12,7 @@ import {
   TrashIcon
 } from '@heroicons/react/24/outline'
 import { toast } from 'react-hot-toast'
+import ProfileModal from './ProfileModal'
 
 interface Chat {
   _id: string
@@ -53,6 +54,7 @@ export default function ChatHeader({ chat, onVideoCall }: ChatHeaderProps) {
   const { deleteChat } = useSocket()
   const [showMenu, setShowMenu] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [showProfile, setShowProfile] = useState(false)
 
   const getChatDisplayName = () => {
     if (chat.type === 'group') {
@@ -107,6 +109,16 @@ export default function ChatHeader({ chat, onVideoCall }: ChatHeaderProps) {
       default:
         return 'text-gray-500'
     }
+  }
+
+  const getOtherParticipant = () => {
+    if (chat.type === 'group') return null
+    return chat.participants.find(p => p._id !== user?._id)
+  }
+
+  const handleViewProfile = () => {
+    setShowProfile(true)
+    setShowMenu(false)
   }
 
   const handleDeleteChat = async () => {
@@ -167,9 +179,14 @@ export default function ChatHeader({ chat, onVideoCall }: ChatHeaderProps) {
 
           {showMenu && (
             <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 border border-gray-200">
-              <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                View profile
-              </button>
+              {chat.type === 'direct' && (
+                <button 
+                  onClick={handleViewProfile}
+                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                >
+                  View profile
+                </button>
+              )}
               <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                 Mute notifications
               </button>
@@ -194,6 +211,15 @@ export default function ChatHeader({ chat, onVideoCall }: ChatHeaderProps) {
           )}
         </div>
       </div>
+
+      {/* Profile Modal */}
+      {showProfile && chat.type === 'direct' && (
+        <ProfileModal
+          userId={getOtherParticipant()?._id}
+          onClose={() => setShowProfile(false)}
+          isOwnProfile={false}
+        />
+      )}
     </div>
   )
 } 
