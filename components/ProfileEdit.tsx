@@ -12,6 +12,7 @@ import {
   XMarkIcon,
   CheckIcon
 } from '@heroicons/react/24/outline'
+import ImageUpload from './ImageUpload'
 
 interface UserProfile {
   _id: string
@@ -58,6 +59,7 @@ export default function ProfileEdit({ onClose, onSave }: ProfileEditProps) {
   const [error, setError] = useState<string | null>(null)
   
   const [formData, setFormData] = useState({
+    avatar: '',
     displayName: '',
     bio: '',
     phoneNumber: '',
@@ -104,6 +106,7 @@ export default function ProfileEdit({ onClose, onSave }: ProfileEditProps) {
         
         // Populate form with existing data
         setFormData({
+          avatar: profile.avatar || '',
           displayName: profile.displayName || '',
           bio: profile.bio || '',
           phoneNumber: profile.phoneNumber || '',
@@ -141,13 +144,19 @@ export default function ProfileEdit({ onClose, onSave }: ProfileEditProps) {
   const handleInputChange = (field: string, value: any) => {
     if (field.includes('.')) {
       const [section, key] = field.split('.')
-      setFormData(prev => ({
-        ...prev,
-        [section]: {
-          ...prev[section as keyof typeof prev],
-          [key]: value
+      setFormData(prev => {
+        const sectionData = prev[section as keyof typeof prev]
+        if (typeof sectionData === 'object' && sectionData !== null) {
+          return {
+            ...prev,
+            [section]: {
+              ...sectionData,
+              [key]: value
+            }
+          }
         }
-      }))
+        return prev
+      })
     } else {
       setFormData(prev => ({
         ...prev,
@@ -251,6 +260,17 @@ export default function ProfileEdit({ onClose, onSave }: ProfileEditProps) {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Profile Picture */}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Profile Picture</h3>
+            <ImageUpload
+              currentImage={formData.avatar}
+              onImageUpload={(imageUrl) => setFormData(prev => ({ ...prev, avatar: imageUrl }))}
+              size="lg"
+              className="mb-4"
+            />
+          </div>
+
           {/* Basic Information */}
           <div>
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>

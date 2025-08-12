@@ -204,7 +204,7 @@ export default function ProfileView({ userId, onClose, isOwnProfile = false }: P
       {/* Bio */}
       {profile.bio && (
         <div className="mb-6">
-          <p className="text-gray-700 text-center italic">"{profile.bio}"</p>
+          <p className="text-gray-700 text-center italic">&ldquo;{profile.bio}&rdquo;</p>
         </div>
       )}
 

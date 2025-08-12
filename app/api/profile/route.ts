@@ -60,8 +60,8 @@ export async function PUT(request: NextRequest) {
     
     // Fields that users can update
     const allowedFields = [
-      'displayName', 'bio', 'phoneNumber', 'location', 'website',
-      'socialLinks', 'preferences', 'avatar'
+      'avatar', 'displayName', 'bio', 'phoneNumber', 'location', 'website',
+      'socialLinks', 'preferences'
     ];
     
     // Filter out non-allowed fields
