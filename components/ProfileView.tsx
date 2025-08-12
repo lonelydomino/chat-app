@@ -70,6 +70,8 @@ export default function ProfileView({ userId, onClose, isOwnProfile = false }: P
           }
           
           const data = await response.json()
+          console.log('Own profile data received:', data.user)
+          console.log('Avatar URL:', data.user?.avatar)
           setProfile(data.user)
         } else {
           // For other users, use the public profile endpoint
@@ -84,6 +86,8 @@ export default function ProfileView({ userId, onClose, isOwnProfile = false }: P
           }
           
           const data = await response.json()
+          console.log('Other user profile data received:', data.user)
+          console.log('Avatar URL:', data.user?.avatar)
           setProfile(data.user)
         }
       } catch (err) {
@@ -177,11 +181,16 @@ export default function ProfileView({ userId, onClose, isOwnProfile = false }: P
       <div className="text-center mb-6">
         <div className="relative inline-block">
           {profile.avatar ? (
-            <img
-              src={profile.avatar}
-              alt={profile.displayName || profile.username}
-              className="w-24 h-24 rounded-full object-cover mx-auto mb-4"
-            />
+            <>
+              {console.log('Rendering avatar with URL:', profile.avatar)}
+              <img
+                src={profile.avatar}
+                alt={profile.displayName || profile.username}
+                className="w-24 h-24 rounded-full object-cover mx-auto mb-4"
+                onError={(e) => console.error('Image failed to load:', profile.avatar, e)}
+                onLoad={() => console.log('Image loaded successfully:', profile.avatar)}
+              />
+            </>
           ) : (
             <div className="w-24 h-24 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
               <UserIcon className="w-12 h-12 text-white" />
