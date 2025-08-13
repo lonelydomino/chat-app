@@ -53,7 +53,7 @@ interface ProfileEditProps {
 }
 
 export default function ProfileEdit({ onClose, onSave }: ProfileEditProps) {
-  const { user: currentUser, token } = useAuth()
+  const { user: currentUser, token, refreshUser } = useAuth()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -91,6 +91,10 @@ export default function ProfileEdit({ onClose, onSave }: ProfileEditProps) {
       
       try {
         setLoading(true)
+        
+        // First refresh user data to get latest avatar
+        await refreshUser()
+        
         const response = await fetch('/api/profile', {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -197,6 +201,9 @@ export default function ProfileEdit({ onClose, onSave }: ProfileEditProps) {
       
       const data = await response.json()
       toast.success('Profile updated successfully!')
+      
+      // Refresh user data in AuthContext to update avatar
+      await refreshUser()
       
       if (onSave) {
         onSave(data.user)
