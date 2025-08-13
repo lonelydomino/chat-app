@@ -13,6 +13,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { toast } from 'react-hot-toast'
 import ProfileModal from './ProfileModal'
+import UserAvatar, { GroupAvatar } from './UserAvatar'
 
 interface Chat {
   _id: string
@@ -67,18 +68,20 @@ export default function ChatHeader({ chat, onVideoCall }: ChatHeaderProps) {
 
   const getChatAvatar = () => {
     if (chat.type === 'group') {
-      return (
-        <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
-          <UserGroupIcon className="w-5 h-5 text-white" />
-        </div>
-      )
+      return <GroupAvatar size="md" />
     } else {
       const otherParticipant = chat.participants.find(p => p._id !== user?._id)
-      return (
-        <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-          <UserIcon className="w-5 h-5 text-gray-600" />
-        </div>
-      )
+      if (otherParticipant) {
+        return (
+          <UserAvatar 
+            user={otherParticipant} 
+            size="md" 
+            showStatus={true}
+            status={otherParticipant.status}
+          />
+        )
+      }
+      return <UserAvatar user={{ _id: '', username: 'Unknown', avatar: undefined }} size="md" />
     }
   }
 
@@ -142,7 +145,9 @@ export default function ChatHeader({ chat, onVideoCall }: ChatHeaderProps) {
   return (
     <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white">
       <div className="flex items-center space-x-3">
-        {getChatAvatar()}
+        <button onClick={handleViewProfile} className="hover:opacity-80 transition-opacity">
+          {getChatAvatar()}
+        </button>
         <div>
           <h2 className="text-lg font-semibold text-gray-900">
             {getChatDisplayName()}

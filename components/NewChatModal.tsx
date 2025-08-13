@@ -6,6 +6,7 @@ import { useSocket } from '@/contexts/SocketContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { XMarkIcon as XIcon, UserIcon, UserGroupIcon } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
+import UserAvatar from './UserAvatar'
 
 interface NewChatModalProps {
   onClose: () => void
@@ -210,17 +211,16 @@ export default function NewChatModal({ onClose }: NewChatModalProps) {
                   }`}
                 >
                   <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                      <UserIcon className="w-4 h-4 text-gray-600" />
-                    </div>
+                    <UserAvatar 
+                      user={user} 
+                      size="sm" 
+                      showStatus={true}
+                      status={user.status}
+                    />
                     <div className="flex-1">
                       <p className="font-medium text-gray-900">{user.username}</p>
                       <p className="text-sm text-gray-500">{user.email}</p>
                     </div>
-                    <div className={`w-2 h-2 rounded-full ${
-                      user.status === 'online' ? 'bg-green-500' :
-                      user.status === 'away' ? 'bg-yellow-500' : 'bg-gray-400'
-                    }`}></div>
                   </div>
                 </button>
                 ))

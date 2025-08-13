@@ -14,6 +14,7 @@ import {
   Cog6ToothIcon
 } from '@heroicons/react/24/outline'
 import ProfileModal from './ProfileModal'
+import UserAvatar, { GroupAvatar } from './UserAvatar'
 
 interface User {
   _id: string
@@ -136,18 +137,20 @@ export default function Sidebar({ onNewChat, onLogout, user, isConnected }: Side
 
   const getChatAvatar = (chat: Chat) => {
     if (chat.type === 'group') {
-      return (
-        <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
-          <UserGroupIcon className="w-5 h-5 text-white" />
-        </div>
-      )
+      return <GroupAvatar size="md" />
     } else {
       const otherParticipant = chat.participants.find(p => p._id !== user._id)
-      return (
-        <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-          <UserIcon className="w-5 h-5 text-gray-600" />
-        </div>
-      )
+      if (otherParticipant) {
+        return (
+          <UserAvatar 
+            user={otherParticipant} 
+            size="md" 
+            showStatus={true}
+            status={otherParticipant.status}
+          />
+        )
+      }
+      return <UserAvatar user={{ _id: '', username: 'Unknown', avatar: undefined }} size="md" />
     }
   }
 
@@ -208,7 +211,21 @@ export default function Sidebar({ onNewChat, onLogout, user, isConnected }: Side
               }`}
             >
               <div className="flex items-center space-x-3">
-                {getChatAvatar(chat)}
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    if (chat.type === 'direct') {
+                      const otherParticipant = chat.participants.find(p => p._id !== user._id)
+                      if (otherParticipant) {
+                        setShowProfile(true)
+                        // TODO: Add state to show other user's profile
+                      }
+                    }
+                  }}
+                  className="hover:opacity-80 transition-opacity"
+                >
+                  {getChatAvatar(chat)}
+                </button>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
                     <h3 className="text-sm font-medium text-gray-900 truncate">
@@ -257,9 +274,12 @@ export default function Sidebar({ onNewChat, onLogout, user, isConnected }: Side
       {/* User Profile */}
       <div className="p-4 border-t border-gray-200">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
-            <UserIcon className="w-5 h-5 text-white" />
-          </div>
+          <UserAvatar 
+            user={user} 
+            size="md" 
+            showStatus={true}
+            status={user.status}
+          />
           <div className="flex-1 min-w-0">
             <h3 className="text-sm font-medium text-gray-900 truncate">
               {user.username}
