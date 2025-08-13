@@ -22,6 +22,12 @@ export default function UserAvatar({
   showStatus = false,
   status = 'offline'
 }: UserAvatarProps) {
+  console.log('🖼️ UserAvatar rendering:', { 
+    username: user.username, 
+    avatar: user.avatar, 
+    hasAvatar: !!user.avatar,
+    size 
+  })
   const sizeClasses = {
     sm: 'w-8 h-8',
     md: 'w-10 h-10',

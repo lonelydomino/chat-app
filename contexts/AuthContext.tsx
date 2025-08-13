@@ -36,7 +36,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     if (storedToken && storedUser) {
       setToken(storedToken)
-      setUser(JSON.parse(storedUser))
+      const parsedUser = JSON.parse(storedUser)
+      console.log('📱 User data loaded from localStorage:', { 
+        userId: parsedUser._id, 
+        username: parsedUser.username, 
+        avatar: parsedUser.avatar,
+        hasAvatar: !!parsedUser.avatar 
+      })
+      setUser(parsedUser)
     }
     
     setIsLoading(false)
@@ -108,6 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!token) return
     
     try {
+      console.log('🔄 Refreshing user data...')
       const response = await fetch('/api/profile', {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -116,8 +124,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (response.ok) {
         const data = await response.json()
+        console.log('✅ User data refreshed:', { 
+          userId: data.user._id, 
+          username: data.user.username, 
+          avatar: data.user.avatar,
+          hasAvatar: !!data.user.avatar 
+        })
         setUser(data.user)
         localStorage.setItem('user', JSON.stringify(data.user))
+      } else {
+        console.error('❌ Failed to refresh user data:', response.status)
       }
     } catch (error) {
       console.error('Error refreshing user data:', error)
