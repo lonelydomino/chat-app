@@ -46,7 +46,8 @@ app.prepare().then(async () => {
     // Start server
     server.listen(port, (err) => {
       if (err) throw err
-      console.log(`> Ready on http://${hostname}:${port}`)
+      console.log(`> Ready on http://0.0.0.0:${port}`)
+      console.log(`> Railway URL: https://chat-app-production-8492.up.railway.app`)
       console.log('> Socket.io server is running')
     })
   } catch (error) {
