@@ -8,7 +8,8 @@
     "start": "NODE_ENV=production node server.js",
     "lint": "next lint",
     "setup": "node setup.js",
-    "troubleshoot": "node troubleshoot.js"
+    "troubleshoot": "node troubleshoot.js",
+    "install-deps": "yarn install"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.17",
