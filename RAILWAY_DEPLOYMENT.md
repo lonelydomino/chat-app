@@ -8,14 +8,14 @@
 
 ## ⚙️ Environment Variables
 
-Set these in Railway dashboard:
+**CRITICAL**: You MUST set these in Railway dashboard before deploying:
 
 ```bash
-# Database URLs
+# Database URLs (REQUIRED - app won't start without these)
 MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/chat-app
 REDIS_URL=redis://username:password@host:port
 
-# JWT Secret
+# JWT Secret (REQUIRED - authentication won't work without this)
 JWT_SECRET=your-super-secret-jwt-key-here
 
 # Environment
@@ -24,6 +24,13 @@ NODE_ENV=production
 # Optional: Custom port (Railway sets this automatically)
 PORT=3000
 ```
+
+## 🚨 Important Notes:
+
+1. **MONGODB_URI**: Must be a valid MongoDB Atlas or external MongoDB URL
+2. **REDIS_URL**: Must be a valid Redis Cloud or external Redis URL  
+3. **JWT_SECRET**: Must be a strong, unique secret key
+4. **Localhost URLs won't work** on Railway - you need external database services
 
 ## 🔧 Build Configuration
 

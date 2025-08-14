@@ -6,8 +6,8 @@ const nextConfig = {
     domains: ['localhost'],
   },
   
-  // Ensure proper output for Railway
-  output: 'standalone',
+  // Railway deployment configuration
+  // output: 'standalone', // Commented out - causes start issues
   
   // Webpack configuration for Railway
   webpack: (config, { isServer }) => {

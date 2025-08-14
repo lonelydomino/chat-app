@@ -13,7 +13,8 @@
     "railway:build": "NODE_ENV=production next build",
     "railway:start": "NODE_ENV=production node server.js",
     "railway:install": "yarn install --frozen-lockfile --production=false",
-    "railway:debug": "node scripts/test-build.js"
+    "railway:debug": "node scripts/test-build.js",
+    "railway:start-standalone": "NODE_ENV=production node .next/standalone/server.js"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.17",
