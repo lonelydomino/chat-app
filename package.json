@@ -9,7 +9,9 @@
     "lint": "next lint",
     "setup": "node setup.js",
     "troubleshoot": "node troubleshoot.js",
-    "install-deps": "yarn install"
+    "install-deps": "yarn install",
+    "railway:build": "NODE_ENV=production next build",
+    "railway:start": "NODE_ENV=production node server.js"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.17",
