@@ -11,7 +11,9 @@
     "troubleshoot": "node troubleshoot.js",
     "install-deps": "yarn install",
     "railway:build": "NODE_ENV=production next build",
-    "railway:start": "NODE_ENV=production node server.js"
+    "railway:start": "NODE_ENV=production node server.js",
+    "railway:install": "yarn install --frozen-lockfile --production=false",
+    "railway:debug": "node scripts/test-build.js"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.17",
