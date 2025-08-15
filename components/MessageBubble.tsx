@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { 
   PaperClipIcon, 
@@ -39,6 +39,67 @@ interface MessageBubbleProps {
 export default function MessageBubble({ message, isOwn, showTime, time }: MessageBubbleProps) {
   const [isPlaying, setIsPlaying] = useState(false)
   const [audioProgress, setAudioProgress] = useState(0)
+  const audioRef = useRef<HTMLAudioElement>(null)
+
+  // Handle audio playback
+  const toggleAudio = () => {
+    if (!audioRef.current) return
+
+    if (isPlaying) {
+      audioRef.current.pause()
+      setIsPlaying(false)
+    } else {
+      // Stop any other playing audio first
+      const allAudios = document.querySelectorAll('audio')
+      allAudios.forEach(audio => {
+        if (audio !== audioRef.current) {
+          audio.pause()
+          audio.currentTime = 0
+        }
+      })
+      
+      audioRef.current.play()
+      setIsPlaying(true)
+    }
+  }
+
+  // Handle audio events
+  useEffect(() => {
+    const audio = audioRef.current
+    if (!audio) return
+
+    const handleTimeUpdate = () => {
+      if (audio.duration) {
+        const progress = (audio.currentTime / audio.duration) * 100
+        setAudioProgress(progress)
+      }
+    }
+
+    const handleEnded = () => {
+      setIsPlaying(false)
+      setAudioProgress(0)
+    }
+
+    const handlePause = () => {
+      setIsPlaying(false)
+    }
+
+    const handlePlay = () => {
+      setIsPlaying(true)
+    }
+
+    audio.addEventListener('timeupdate', handleTimeUpdate)
+    audio.addEventListener('ended', handleEnded)
+    audio.addEventListener('pause', handlePause)
+    audio.addEventListener('play', handlePlay)
+
+    return () => {
+      audio.removeEventListener('timeupdate', handleTimeUpdate)
+      audio.removeEventListener('ended', handleEnded)
+      audio.removeEventListener('pause', handlePause)
+      audio.removeEventListener('play', handlePlay)
+    }
+  }, [])
 
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes'
@@ -87,8 +148,11 @@ export default function MessageBubble({ message, isOwn, showTime, time }: Messag
       case 'voice':
         return (
           <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+            {/* Hidden audio element */}
+            <audio ref={audioRef} src={message.fileUrl} preload="metadata" />
+            
             <button
-              onClick={() => setIsPlaying(!isPlaying)}
+              onClick={toggleAudio}
               className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white hover:bg-blue-600 transition-colors"
             >
               {isPlaying ? (
@@ -104,8 +168,9 @@ export default function MessageBubble({ message, isOwn, showTime, time }: Messag
                   style={{ width: `${audioProgress}%` }}
                 ></div>
               </div>
-              <p className="text-xs text-gray-500 mt-1">
-                {message.duration && formatDuration(message.duration)}
+              <p className="flex items-center justify-between text-xs text-gray-500 mt-1">
+                <span>Voice Message</span>
+                {message.duration && <span>{formatDuration(message.duration)}</span>}
               </p>
             </div>
           </div>
