@@ -25,7 +25,7 @@ export default function ImageUpload({
   size = 'md',
   className = ''
 }: ImageUploadProps) {
-  const { token } = useAuth()
+  const { token, refreshUser } = useAuth()
   const [uploading, setUploading] = useState(false)
   const [preview, setPreview] = useState<string | null>(null)
 
@@ -79,6 +79,12 @@ export default function ImageUpload({
         })
 
         if (profileResponse.ok) {
+          // Refresh user data in auth context first
+          await refreshUser()
+          
+          // Small delay to ensure state updates are processed
+          await new Promise(resolve => setTimeout(resolve, 200))
+          
           // Update the local state
           onImageUpload(data.fileUrl)
           toast.success('Profile picture updated successfully!')
@@ -102,7 +108,7 @@ export default function ImageUpload({
     } finally {
       setUploading(false)
     }
-  }, [token, onImageUpload])
+  }, [token, onImageUpload, refreshUser])
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
