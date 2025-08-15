@@ -22,18 +22,27 @@ export default function ChatArea({ onVideoCall }: ChatAreaProps) {
 
   // Mark messages as read when they become visible
   const handleScroll = useCallback(() => {
-    if (!currentChat || !messageListRef.current) return
+    console.log('📜 Scroll event triggered')
+    
+    if (!currentChat || !messageListRef.current) {
+      console.log('❌ Cannot handle scroll:', { hasCurrentChat: !!currentChat, hasRef: !!messageListRef.current })
+      return
+    }
 
     const container = messageListRef.current
     const scrollTop = container.scrollTop
     const scrollHeight = container.scrollHeight
     const clientHeight = container.clientHeight
 
+    console.log('📊 Scroll position:', { scrollTop, scrollHeight, clientHeight, nearBottom: scrollHeight - scrollTop - clientHeight < 100 })
+
     // If user is near the bottom (within 100px), mark messages as read
     if (scrollHeight - scrollTop - clientHeight < 100) {
       const unreadMessageIds = messages
         .filter(msg => !msg.readBy.includes(user?._id || ''))
         .map(msg => msg._id)
+      
+      console.log('📖 Scroll-based read marking:', { unreadCount: unreadMessageIds.length, messageIds: unreadMessageIds })
       
       if (unreadMessageIds.length > 0) {
         console.log('📖 Marking messages as read on scroll:', unreadMessageIds.length, 'messages')

@@ -261,43 +261,92 @@ export function SocketProvider({ children }: { children: ReactNode }) {
   }
 
   const markMessagesAsRead = (messageIds: string[]) => {
+    console.log('📤 markMessagesAsRead called:', {
+      hasSocket: !!socket,
+      hasCurrentChat: !!currentChat,
+      chatId: currentChat?._id,
+      messageIdsCount: messageIds.length,
+      messageIds: messageIds
+    })
+    
     if (socket && currentChat) {
+      console.log('🚀 Emitting mark-read socket event')
       socket.emit('mark-read', { chatId: currentChat._id, messageIds })
+    } else {
+      console.log('❌ Cannot emit mark-read:', {
+        hasSocket: !!socket,
+        hasCurrentChat: !!currentChat
+      })
     }
   }
 
   // Mark all messages in current chat as read
   const markCurrentChatAsRead = useCallback(() => {
+    console.log('🔍 markCurrentChatAsRead called:', {
+      hasCurrentChat: !!currentChat,
+      chatId: currentChat?._id,
+      messagesCount: messages.length,
+      currentUserId: user?._id
+    })
+
     if (currentChat && messages.length > 0) {
       // Get all message IDs that haven't been read by current user
       const unreadMessageIds = messages
         .filter(msg => !msg.readBy.includes(user?._id || ''))
         .map(msg => msg._id)
       
+      console.log('📖 Found unread messages:', {
+        totalMessages: messages.length,
+        unreadCount: unreadMessageIds.length,
+        unreadIds: unreadMessageIds
+      })
+      
       if (unreadMessageIds.length > 0) {
         console.log('📖 Marking messages as read:', unreadMessageIds.length, 'messages')
         markMessagesAsRead(unreadMessageIds)
         
         // Update local state to reflect read status
-        setMessages(prev => prev.map(msg => ({
-          ...msg,
-          readBy: msg.readBy.includes(user?._id || '') ? msg.readBy : [...msg.readBy, user?._id || '']
-        })))
+        setMessages(prev => {
+          const updated = prev.map(msg => ({
+            ...msg,
+            readBy: msg.readBy.includes(user?._id || '') ? msg.readBy : [...msg.readBy, user?._id || '']
+          }))
+          console.log('📝 Updated messages with read status:', updated.length)
+          return updated
+        })
         
         // Update chat unread count
-        setChats(prev => prev.map(chat => 
-          chat._id === currentChat._id 
-            ? { ...chat, unreadCount: 0 }
-            : chat
-        ))
+        setChats(prev => {
+          const updated = prev.map(chat => 
+            chat._id === currentChat._id 
+              ? { ...chat, unreadCount: 0 }
+              : chat
+          )
+          console.log('📊 Updated chats with unread count reset:', updated.length)
+          return updated
+        })
+      } else {
+        console.log('✅ No unread messages to mark')
       }
+    } else {
+      console.log('❌ Cannot mark as read:', {
+        hasCurrentChat: !!currentChat,
+        messagesCount: messages.length
+      })
     }
   }, [currentChat, messages, user?._id, markMessagesAsRead])
 
   // Set current chat and mark messages as read
   const setCurrentChatWithRead = useCallback((chat: Chat | null) => {
+    console.log('🔄 setCurrentChatWithRead called:', {
+      newChat: chat?._id,
+      currentChat: currentChat?._id,
+      isSameChat: chat?._id === currentChat?._id
+    })
+    
     // If we're leaving a chat, mark its messages as read
     if (currentChat && chat?._id !== currentChat._id) {
+      console.log('👋 Leaving chat, marking messages as read')
       markCurrentChatAsRead()
     }
     
@@ -306,7 +355,9 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     
     // If switching to a new chat, mark its messages as read after a short delay
     if (chat) {
+      console.log('🚀 Switching to new chat, will mark as read after delay')
       setTimeout(() => {
+        console.log('⏰ Delayed read marking for new chat')
         markCurrentChatAsRead()
       }, 500) // Small delay to ensure messages are loaded
     }
@@ -314,13 +365,24 @@ export function SocketProvider({ children }: { children: ReactNode }) {
 
   // Mark messages as read when they're viewed
   useEffect(() => {
+    console.log('👁️ Read marking useEffect triggered:', {
+      hasCurrentChat: !!currentChat,
+      chatId: currentChat?._id,
+      messagesCount: messages.length,
+      hasMarkCurrentChatAsRead: !!markCurrentChatAsRead
+    })
+    
     if (currentChat && messages.length > 0) {
       // Mark messages as read after a short delay to ensure they're actually visible
       const timer = setTimeout(() => {
+        console.log('⏰ Timer fired, calling markCurrentChatAsRead')
         markCurrentChatAsRead()
-      }, 1000) // 1 second delay to ensure messages are rendered
+      }, 1000) // 1 second delay to ensure messages are loaded
 
-      return () => clearTimeout(timer)
+      return () => {
+        console.log('🧹 Clearing read marking timer')
+        clearTimeout(timer)
+      }
     }
   }, [currentChat, messages, markCurrentChatAsRead])
 
