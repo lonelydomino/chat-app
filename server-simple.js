@@ -29,39 +29,15 @@ app.prepare().then(async () => {
     await connectRedis()
     console.log('✅ Redis connected')
 
-    // Create HTTP server with custom request handling
+    // Create HTTP server that delegates everything to Next.js
     const server = createServer(async (req, res) => {
       try {
         console.log(`📨 Request: ${req.method} ${req.url}`)
         
-        // Handle health check
-        if (req.url === '/api/health') {
-          res.writeHead(200, { 'Content-Type': 'application/json' })
-          res.end(JSON.stringify({
-            status: 'healthy',
-            timestamp: new Date().toISOString(),
-            uptime: process.uptime(),
-            environment: process.env.NODE_ENV,
-            message: 'Simple server is running successfully!'
-          }))
-          return
-        }
-        
-        // Handle test endpoint
-        if (req.url === '/api/test') {
-          res.writeHead(200, { 'Content-Type': 'application/json' })
-          res.end(JSON.stringify({
-            message: 'Test endpoint working!',
-            timestamp: new Date().toISOString(),
-            server: 'simple'
-          }))
-          return
-        }
-        
-        // Handle all other requests with Next.js
+        // Let Next.js handle ALL requests including API routes
         const parsedUrl = parse(req.url, true)
         await handle(req, res, parsedUrl)
-        console.log(`✅ Request handled: ${req.method} ${req.url}`)
+        console.log(`✅ Request handled by Next.js: ${req.method} ${req.url}`)
       } catch (err) {
         console.error('❌ Error occurred handling', req.url, err)
         res.statusCode = 500

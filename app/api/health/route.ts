@@ -7,7 +7,8 @@ export async function GET() {
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
       environment: process.env.NODE_ENV,
-      message: 'Chat app is running successfully!'
+      message: 'Chat app is running successfully!',
+      server: 'Next.js API route'
     })
   } catch (error) {
     return NextResponse.json(
