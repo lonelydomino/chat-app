@@ -11,14 +11,16 @@ import {
   FaceSmileIcon
 } from '@heroicons/react/24/outline'
 import { motion, AnimatePresence } from 'framer-motion'
+import toast from 'react-hot-toast'
 
 export default function MessageInput() {
   const { currentChat, sendMessage, setTyping } = useSocket()
-  const { user } = useAuth()
+  const { user, token } = useAuth()
   const [message, setMessage] = useState('')
   const [isRecording, setIsRecording] = useState(false)
   const [isTyping, setIsTyping] = useState(false)
   const [showFileInput, setShowFileInput] = useState(false)
+  const [isUploadingImage, setIsUploadingImage] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const audioChunksRef = useRef<Blob[]>([])
@@ -63,18 +65,57 @@ export default function MessageInput() {
     }
   }
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (file && currentChat) {
-      // In a real app, you'd upload the file to a server first
-      const fileUrl = URL.createObjectURL(file)
-      sendMessage('', 'file', {
-        fileUrl,
-        fileName: file.name,
-        fileSize: file.size
-      })
+    if (!file || !currentChat) return
+
+    try {
+      // Check if it's an image file
+      if (file.type.startsWith('image/')) {
+        setIsUploadingImage(true)
+        
+        // Upload image to Cloudinary
+        const formData = new FormData()
+        formData.append('image', file)
+
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: formData
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json()
+          throw new Error(errorData.error || 'Image upload failed')
+        }
+
+        const data = await response.json()
+        
+        // Send image message
+        sendMessage('', 'image', {
+          fileUrl: data.fileUrl,
+          fileName: file.name,
+          fileSize: file.size
+        })
+
+        toast.success('Image sent successfully!')
+      } else {
+        // Handle other file types (for now, just show a message)
+        toast.error('Only image files are supported for now')
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error)
+      toast.error(error instanceof Error ? error.message : 'Failed to upload image')
+    } finally {
+      setIsUploadingImage(false)
+      setShowFileInput(false)
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
     }
-    setShowFileInput(false)
   }
 
   const startRecording = async () => {
@@ -188,26 +229,26 @@ export default function MessageInput() {
               type="file"
               onChange={handleFileUpload}
               className="hidden"
-              accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt"
+              accept="image/*"
             />
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 gap-2">
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="p-3 border-2 border-dashed border-gray-300 rounded-lg text-center hover:border-blue-500 transition-colors"
+                disabled={isUploadingImage}
+                className="p-3 border-2 border-dashed border-gray-300 rounded-lg text-center hover:border-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <PaperClipIcon className="w-6 h-6 mx-auto mb-2 text-gray-400" />
-                <p className="text-sm text-gray-600">Upload File</p>
-              </button>
-              <button
-                onClick={() => {
-                  if (typeof navigator.mediaDevices?.getUserMedia === 'function') {
-                    startRecording()
-                  }
-                }}
-                className="p-3 border-2 border-dashed border-gray-300 rounded-lg text-center hover:border-blue-500 transition-colors"
-              >
-                <MicrophoneIcon className="w-6 h-6 mx-auto mb-2 text-gray-400" />
-                <p className="text-sm text-gray-600">Voice Message</p>
+                {isUploadingImage ? (
+                  <>
+                    <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                    <p className="text-sm text-blue-600">Uploading...</p>
+                  </>
+                ) : (
+                  <>
+                    <PaperClipIcon className="w-6 h-6 mx-auto mb-2 text-gray-400" />
+                    <p className="text-sm text-gray-600">Send Image</p>
+                    <p className="text-xs text-gray-500">JPG, PNG, GIF, WebP</p>
+                  </>
+                )}
               </button>
             </div>
           </motion.div>
