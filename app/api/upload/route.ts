@@ -1,17 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import jwt from 'jsonwebtoken';
-
-// Temporary in-memory storage for development/testing
-// In production, use cloud storage like AWS S3 or Cloudinary
-if (!global.fileStorage) {
-  global.fileStorage = new Map<string, { buffer: Buffer; type: string; name: string }>();
-}
+import cloudinary from '@/lib/cloudinary';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
+    // Check Cloudinary configuration
+    if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+      console.error('❌ Cloudinary configuration missing:', {
+        cloudName: !!process.env.CLOUDINARY_CLOUD_NAME,
+        apiKey: !!process.env.CLOUDINARY_API_KEY,
+        apiSecret: !!process.env.CLOUDINARY_API_SECRET
+      });
+      return NextResponse.json(
+        { error: 'Cloudinary configuration incomplete' },
+        { status: 500 }
+      );
+    }
+
+    console.log('✅ Cloudinary config check passed');
+
     // Verify authentication
     const authHeader = request.headers.get('authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -25,6 +35,8 @@ export async function POST(request: NextRequest) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret') as any;
     const userId = decoded.userId;
 
+    console.log('✅ Authentication verified for user:', userId);
+
     // Get the form data
     const formData = await request.formData();
     const file = formData.get('image') as File;
@@ -35,6 +47,8 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    console.log('✅ File received:', { name: file.name, size: file.size, type: file.type });
 
     // Validate file type
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
@@ -54,37 +68,67 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate unique filename
-    const fileExtension = file.name.split('.').pop();
-    const fileName = `${uuidv4()}.${fileExtension}`;
-    
-    // Convert file to buffer and store in memory
+    // Convert file to buffer
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    
-    // Store file in memory (temporary solution)
-    global.fileStorage.set(fileName, {
-      buffer,
-      type: file.type,
-      name: file.name
+
+    console.log('✅ File converted to buffer, size:', buffer.length);
+
+    // Generate unique filename
+    const fileExtension = file.name.split('.').pop();
+    const fileName = `chat-app/${userId}/${uuidv4()}.${fileExtension}`;
+
+    console.log('✅ Attempting Cloudinary upload for:', fileName);
+
+    // Upload to Cloudinary
+    const result = await new Promise((resolve, reject) => {
+      cloudinary.uploader.upload_stream(
+        {
+          resource_type: 'image',
+          public_id: fileName,
+          folder: 'chat-app',
+          transformation: [
+            { width: 400, height: 400, crop: 'fill', gravity: 'face' }, // Profile picture optimization
+            { quality: 'auto', fetch_format: 'auto' } // Auto-optimize format and quality
+          ]
+        },
+        (error, result) => {
+          if (error) {
+            console.error('❌ Cloudinary upload error:', error);
+            reject(error);
+          } else {
+            console.log('✅ Cloudinary upload successful:', result);
+            resolve(result);
+          }
+        }
+      ).end(buffer);
     });
 
-    // Return the file URL
-    const fileUrl = `/api/uploads/${fileName}`;
+    console.log(`✅ File uploaded to Cloudinary: ${fileName}`);
 
-    console.log(`✅ File uploaded: ${fileName} (${file.size} bytes)`);
-
+    // Return the Cloudinary URL
     return NextResponse.json({ 
       success: true,
-      fileUrl,
-      fileName,
-      message: 'Image uploaded successfully' 
+      fileUrl: (result as any).secure_url,
+      fileName: fileName,
+      publicId: (result as any).public_id,
+      message: 'Image uploaded successfully to Cloudinary' 
     });
 
   } catch (error) {
-    console.error('❌ Error uploading image:', error);
+    console.error('❌ Error uploading image to Cloudinary:', error);
+    
+    // Return more specific error information
+    let errorMessage = 'Internal server error';
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+    
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        error: errorMessage,
+        details: process.env.NODE_ENV === 'development' ? error : undefined
+      },
       { status: 500 }
     );
   }
