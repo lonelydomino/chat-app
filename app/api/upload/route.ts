@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile } from 'fs/promises';
-import { join } from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import jwt from 'jsonwebtoken';
+
+// Temporary in-memory storage for development/testing
+// In production, use cloud storage like AWS S3 or Cloudinary
+if (!global.fileStorage) {
+  global.fileStorage = new Map<string, { buffer: Buffer; type: string; name: string }>();
+}
 
 export const dynamic = 'force-dynamic';
 
@@ -54,18 +58,21 @@ export async function POST(request: NextRequest) {
     const fileExtension = file.name.split('.').pop();
     const fileName = `${uuidv4()}.${fileExtension}`;
     
-    // Create uploads directory if it doesn't exist
-    const uploadsDir = join(process.cwd(), 'uploads');
-    const filePath = join(uploadsDir, fileName);
-
-    // Convert file to buffer and save
+    // Convert file to buffer and store in memory
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
     
-    await writeFile(filePath, buffer);
+    // Store file in memory (temporary solution)
+    global.fileStorage.set(fileName, {
+      buffer,
+      type: file.type,
+      name: file.name
+    });
 
     // Return the file URL
     const fileUrl = `/api/uploads/${fileName}`;
+
+    console.log(`✅ File uploaded: ${fileName} (${file.size} bytes)`);
 
     return NextResponse.json({ 
       success: true,
@@ -75,7 +82,7 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Error uploading image:', error);
+    console.error('❌ Error uploading image:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
