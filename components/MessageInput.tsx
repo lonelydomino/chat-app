@@ -94,6 +94,13 @@ export default function MessageInput() {
         const data = await response.json()
         
         // Send image message
+        console.log('📤 Sending image message:', {
+          type: 'image',
+          fileUrl: data.fileUrl,
+          fileName: file.name,
+          fileSize: file.size
+        })
+        
         sendMessage('', 'image', {
           fileUrl: data.fileUrl,
           fileName: file.name,

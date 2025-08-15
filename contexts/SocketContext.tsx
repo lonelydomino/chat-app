@@ -127,7 +127,14 @@ export function SocketProvider({ children }: { children: ReactNode }) {
       })
 
       newSocket.on('new-message', (data: { message: Message; chat: Chat }) => {
-        console.log('📨 Received new message')
+        console.log('📨 Received new message:', {
+          messageId: data.message._id,
+          content: data.message.content,
+          type: data.message.type,
+          chatId: data.message.chatId,
+          sender: data.message.sender.username
+        })
+        
         setMessages(prev => [...prev, data.message])
         
         // Update chat's last message
@@ -201,18 +208,24 @@ export function SocketProvider({ children }: { children: ReactNode }) {
   }, [token, user])
 
   const sendMessage = (content: string, type: 'text' | 'file' | 'voice' | 'image' = 'text', fileData?: any) => {
-    console.log('🚀 sendMessage called')
+    console.log('�� sendMessage called with:', { content, type, fileData })
     
     if (socket && currentChat) {
-      console.log('✅ Sending message via socket')
-      socket.emit('send-message', {
+      console.log('✅ Sending message via socket to chat:', currentChat._id)
+      const messageData = {
         chatId: currentChat._id,
         content,
         type,
         ...fileData
-      })
+      }
+      console.log('📤 Socket emit data:', messageData)
+      socket.emit('send-message', messageData)
     } else {
-      console.log('❌ Cannot send - missing socket or chat')
+      console.log('❌ Cannot send - missing socket or chat:', { 
+        hasSocket: !!socket, 
+        hasCurrentChat: !!currentChat,
+        currentChatId: currentChat?._id 
+      })
     }
   }
 
