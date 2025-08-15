@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useSocket } from '@/contexts/SocketContext'
 import { useAuth } from '@/contexts/AuthContext'
 import MessageList from './MessageList'
@@ -15,9 +15,32 @@ interface ChatAreaProps {
 export default function ChatArea({ onVideoCall }: ChatAreaProps) {
   console.log('🔥 ChatArea rendering')
   
-  const { currentChat, messages, joinChat, leaveChat, fetchMessages } = useSocket()
+  const { currentChat, messages, joinChat, leaveChat, fetchMessages, markMessagesAsRead } = useSocket()
   const { user } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
+  const messageListRef = useRef<HTMLDivElement>(null)
+
+  // Mark messages as read when they become visible
+  const handleScroll = useCallback(() => {
+    if (!currentChat || !messageListRef.current) return
+
+    const container = messageListRef.current
+    const scrollTop = container.scrollTop
+    const scrollHeight = container.scrollHeight
+    const clientHeight = container.clientHeight
+
+    // If user is near the bottom (within 100px), mark messages as read
+    if (scrollHeight - scrollTop - clientHeight < 100) {
+      const unreadMessageIds = messages
+        .filter(msg => !msg.readBy.includes(user?._id || ''))
+        .map(msg => msg._id)
+      
+      if (unreadMessageIds.length > 0) {
+        console.log('📖 Marking messages as read on scroll:', unreadMessageIds.length, 'messages')
+        markMessagesAsRead(unreadMessageIds)
+      }
+    }
+  }, [currentChat, messages, user?._id, markMessagesAsRead])
 
   console.log('💬 ChatArea state:', { 
     currentChat: !!currentChat, 
@@ -36,21 +59,30 @@ export default function ChatArea({ onVideoCall }: ChatAreaProps) {
       joinChat(currentChat._id)
       
       console.log('📨 Fetching messages')
-              fetchMessages(currentChat._id)
-          .then(() => {
-            console.log('✅ Messages fetched successfully')
-            setIsLoading(false)
-          })
-          .catch((error) => {
-            console.error('❌ Error fetching messages:', error)
-            // Don't show error toast for 404s - they're handled in fetchMessages
-            if (!error.message?.includes('Chat not found')) {
-              // Only show error for non-404 errors
-            }
-            setIsLoading(false)
-          })
+      fetchMessages(currentChat._id)
+        .then(() => {
+          console.log('✅ Messages fetched successfully')
+          setIsLoading(false)
+        })
+        .catch((error) => {
+          console.error('❌ Error fetching messages:', error)
+          // Don't show error toast for 404s - they're handled in fetchMessages
+          if (!error.message?.includes('Chat not found')) {
+            // Only show error for non-404 errors
+          }
+          setIsLoading(false)
+        })
     }
   }, [currentChat, joinChat, fetchMessages])
+
+  // Add scroll event listener
+  useEffect(() => {
+    const container = messageListRef.current
+    if (container) {
+      container.addEventListener('scroll', handleScroll)
+      return () => container.removeEventListener('scroll', handleScroll)
+    }
+  }, [handleScroll])
 
   useEffect(() => {
     return () => {
@@ -107,7 +139,7 @@ export default function ChatArea({ onVideoCall }: ChatAreaProps) {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
         </div>
       ) : (
-        <MessageList messages={messages} currentUserId={user?._id || ''} />
+        <MessageList messages={messages} currentUserId={user?._id || ''} ref={messageListRef} />
       )}
       
       <MessageInput />

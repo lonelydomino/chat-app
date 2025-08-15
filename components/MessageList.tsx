@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, forwardRef, ForwardedRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSocket } from '@/contexts/SocketContext'
 import MessageBubble from './MessageBubble'
@@ -30,9 +30,10 @@ interface MessageListProps {
   currentUserId: string
 }
 
-export default function MessageList({ messages, currentUserId }: MessageListProps) {
-  const messagesEndRef = useRef<HTMLDivElement>(null)
-  const { typingUsers } = useSocket()
+const MessageList = forwardRef<HTMLDivElement, MessageListProps>(
+  function MessageList({ messages, currentUserId }, ref: ForwardedRef<HTMLDivElement>) {
+    const messagesEndRef = useRef<HTMLDivElement>(null)
+    const { typingUsers } = useSocket()
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -79,7 +80,7 @@ export default function MessageList({ messages, currentUserId }: MessageListProp
   const groupedMessages = groupMessagesByDate(messages)
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 space-y-4">
+    <div ref={ref} className="flex-1 overflow-y-auto p-4 space-y-4">
       <AnimatePresence>
         {Object.entries(groupedMessages).map(([date, dateMessages]) => (
           <div key={date}>
@@ -128,4 +129,6 @@ export default function MessageList({ messages, currentUserId }: MessageListProp
       <div ref={messagesEndRef} />
     </div>
   )
-} 
+})
+
+export default MessageList 
