@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "NODE_ENV=production node server.js",
     "start:express": "NODE_ENV=production node server-express.js",
+    "start:minimal": "NODE_ENV=production node server-minimal.js",
+    "start:simple": "NODE_ENV=production node server-simple.js",
     "lint": "next lint",
     "setup": "node setup.js",
     "troubleshoot": "node troubleshoot.js",

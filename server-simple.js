@@ -1,4 +1,3 @@
-const express = require('express')
 const { createServer } = require('http')
 const { parse } = require('url')
 const next = require('next')
@@ -9,7 +8,7 @@ const dev = process.env.NODE_ENV !== 'production'
 const hostname = 'localhost'
 const port = process.env.PORT || 3000
 
-console.log('🚀 Express Server startup initiated')
+console.log('🚀 Simple Server startup initiated')
 console.log(`📊 Environment: ${process.env.NODE_ENV}`)
 console.log(`🔌 Port: ${port}`)
 console.log(`🌐 Hostname: ${hostname}`)
@@ -21,7 +20,7 @@ const handle = app.getRequestHandler()
 app.prepare().then(async () => {
   try {
     console.log('✅ Next.js app prepared successfully')
-    console.log('🔌 Starting Express server...')
+    console.log('🔌 Starting simple server...')
     console.log('🗄️ Connecting to databases...')
     
     await connectMongoDB()
@@ -30,32 +29,36 @@ app.prepare().then(async () => {
     await connectRedis()
     console.log('✅ Redis connected')
 
-    // Create Express app
-    const expressApp = express()
-    
-    // Add health check endpoint
-    expressApp.get('/api/health', (req, res) => {
-      res.json({
-        status: 'healthy',
-        timestamp: new Date().toISOString(),
-        uptime: process.uptime(),
-        environment: process.env.NODE_ENV,
-        message: 'Express server is running successfully!'
-      })
-    })
-
-    // Add a simple test endpoint
-    expressApp.get('/api/test', (req, res) => {
-      res.json({
-        message: 'Express server is working!',
-        timestamp: new Date().toISOString()
-      })
-    })
-
-    // Handle all other requests with Next.js - simplified approach
-    expressApp.use('*', async (req, res) => {
+    // Create HTTP server with custom request handling
+    const server = createServer(async (req, res) => {
       try {
         console.log(`📨 Request: ${req.method} ${req.url}`)
+        
+        // Handle health check
+        if (req.url === '/api/health') {
+          res.writeHead(200, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify({
+            status: 'healthy',
+            timestamp: new Date().toISOString(),
+            uptime: process.uptime(),
+            environment: process.env.NODE_ENV,
+            message: 'Simple server is running successfully!'
+          }))
+          return
+        }
+        
+        // Handle test endpoint
+        if (req.url === '/api/test') {
+          res.writeHead(200, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify({
+            message: 'Test endpoint working!',
+            timestamp: new Date().toISOString(),
+            server: 'simple'
+          }))
+          return
+        }
+        
+        // Handle all other requests with Next.js
         const parsedUrl = parse(req.url, true)
         await handle(req, res, parsedUrl)
         console.log(`✅ Request handled: ${req.method} ${req.url}`)
@@ -65,9 +68,6 @@ app.prepare().then(async () => {
         res.end('internal server error')
       }
     })
-
-    // Create HTTP server
-    const server = createServer(expressApp)
 
     // Initialize Socket.io
     console.log('🔌 Initializing Socket.io...')
@@ -85,7 +85,7 @@ app.prepare().then(async () => {
         console.error('❌ Server failed to start:', err)
         throw err
       }
-      console.log(`🚀 Express Server started successfully!`)
+      console.log(`🚀 Simple Server started successfully!`)
       console.log(`🌐 Listening on: http://0.0.0.0:${port}`)
       console.log(`🔗 Railway URL: https://chat-app-production-8492.up.railway.app`)
       console.log(`🔌 Socket.io server is running`)
@@ -95,7 +95,7 @@ app.prepare().then(async () => {
       console.log(`🧪 Test endpoint: http://0.0.0.0:${port}/api/test`)
     })
   } catch (error) {
-    console.error('❌ Failed to start Express server:', error)
+    console.error('❌ Failed to start simple server:', error)
     console.error('❌ Make sure MongoDB and Redis are running')
     process.exit(1)
   }
