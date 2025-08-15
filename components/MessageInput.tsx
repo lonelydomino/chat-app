@@ -20,7 +20,7 @@ export default function MessageInput() {
   const [isRecording, setIsRecording] = useState(false)
   const [isTyping, setIsTyping] = useState(false)
   const [showFileInput, setShowFileInput] = useState(false)
-  const [isUploadingImage, setIsUploadingImage] = useState(false)
+
   const [uploading, setUploading] = useState(false)
   const [preview, setPreview] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -154,7 +154,7 @@ export default function MessageInput() {
         fileInputRef.current.value = ''
       }
     }
-  }, [token, onImageUpload, preview])
+  }, [token, preview, sendMessage])
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
