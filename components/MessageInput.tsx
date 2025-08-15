@@ -101,7 +101,9 @@ export default function MessageInput() {
           fileSize: file.size
         })
         
-        sendMessage('', 'image', {
+        // Temporary workaround: send placeholder content for image messages
+        // until the schema validation is updated
+        sendMessage('[Image]', 'image', {
           fileUrl: data.fileUrl,
           fileName: file.name,
           fileSize: file.size
