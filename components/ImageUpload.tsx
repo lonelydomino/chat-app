@@ -64,12 +64,35 @@ export default function ImageUpload({
       }
 
       const data = await response.json()
-      onImageUpload(data.fileUrl)
-      toast.success('Image uploaded successfully!')
       
-      // Clean up preview
-      URL.revokeObjectURL(previewUrl)
-      setPreview(null)
+      // Auto-save the avatar to the profile
+      try {
+        const profileResponse = await fetch('/api/profile', {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            avatar: data.fileUrl
+          })
+        })
+
+        if (profileResponse.ok) {
+          // Update the local state
+          onImageUpload(data.fileUrl)
+          toast.success('Profile picture updated successfully!')
+          
+          // Clean up preview
+          URL.revokeObjectURL(previewUrl)
+          setPreview(null)
+        } else {
+          throw new Error('Failed to update profile')
+        }
+      } catch (profileError) {
+        console.error('Failed to auto-save avatar:', profileError)
+        toast.error('Image uploaded but failed to update profile')
+      }
 
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Upload failed')
