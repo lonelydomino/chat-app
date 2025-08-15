@@ -254,7 +254,11 @@ const messageSchema = new Schema<IMessage>({
   },
   content: {
     type: String,
-    required: true
+    required: function(this: any) {
+      // Content is required for text messages, optional for file/voice/image
+      return this.type === 'text';
+    },
+    default: ''
   },
   type: {
     type: String,
