@@ -12,6 +12,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { motion, AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'
+import EmojiPicker from 'emoji-picker-react'
 
 export default function MessageInput() {
   const { currentChat, sendMessage, setTyping } = useSocket()
@@ -20,12 +21,37 @@ export default function MessageInput() {
   const [isRecording, setIsRecording] = useState(false)
   const [isTyping, setIsTyping] = useState(false)
   const [showFileInput, setShowFileInput] = useState(false)
-
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [preview, setPreview] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const emojiPickerRef = useRef<HTMLDivElement>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const audioChunksRef = useRef<Blob[]>([])
+
+  // Close emoji picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target as Node)) {
+        setShowEmojiPicker(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  // Handle emoji selection
+  const onEmojiClick = (emojiObject: any) => {
+    const emoji = emojiObject.emoji
+    setMessage(prev => prev + emoji)
+    setShowEmojiPicker(false)
+  }
+
+  // Toggle emoji picker
+  const toggleEmojiPicker = () => {
+    setShowEmojiPicker(!showEmojiPicker)
+  }
 
   useEffect(() => {
     let typingTimeout: NodeJS.Timeout
@@ -286,9 +312,36 @@ export default function MessageInput() {
           />
           
           {/* Emoji button */}
-          <button className="absolute right-2 bottom-2 p-1 text-gray-400 hover:text-gray-600">
-                            <FaceSmileIcon className="w-4 h-4" />
-          </button>
+          <div className="relative" ref={emojiPickerRef}>
+            <button 
+              onClick={toggleEmojiPicker}
+              className="absolute right-2 bottom-2 p-1 text-gray-400 hover:text-gray-600 transition-colors"
+              title="Add emoji"
+            >
+              <FaceSmileIcon className="w-4 h-4" />
+            </button>
+            
+            {/* Emoji picker dropdown */}
+            <AnimatePresence>
+              {showEmojiPicker && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                  className="absolute bottom-full right-0 mb-2 z-50"
+                >
+                  <EmojiPicker
+                    onEmojiClick={onEmojiClick}
+                    width={350}
+                    height={400}
+                    searchPlaceholder="Search emojis..."
+                    skinTonesDisabled
+                    lazyLoadEmojis
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
 
         {/* Send button */}
