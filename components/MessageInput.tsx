@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { useSocket } from '@/contexts/SocketContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { 
@@ -21,6 +21,8 @@ export default function MessageInput() {
   const [isTyping, setIsTyping] = useState(false)
   const [showFileInput, setShowFileInput] = useState(false)
   const [isUploadingImage, setIsUploadingImage] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [preview, setPreview] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const audioChunksRef = useRef<Blob[]>([])
@@ -65,35 +67,40 @@ export default function MessageInput() {
     }
   }
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file || !currentChat) return
+  const onDrop = useCallback(async (acceptedFiles: File[]) => {
+    if (acceptedFiles.length === 0) return
+
+    const file = acceptedFiles[0]
+    
+    // Create preview for images
+    if (file.type.startsWith('image/')) {
+      const previewUrl = URL.createObjectURL(file)
+      setPreview(previewUrl)
+    }
 
     try {
-      // Check if it's an image file
-      if (file.type.startsWith('image/')) {
-        setIsUploadingImage(true)
-        
-        // Upload image to Cloudinary
-        const formData = new FormData()
-        formData.append('image', file)
+      setUploading(true)
+      
+      const formData = new FormData()
+      formData.append('file', file) // Changed from 'image' to 'file'
 
-        const response = await fetch('/api/upload', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          },
-          body: formData
-        })
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      })
 
-        if (!response.ok) {
-          const errorData = await response.json()
-          throw new Error(errorData.error || 'Image upload failed')
-        }
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Upload failed')
+      }
 
-        const data = await response.json()
-        
-        // Send image message
+      const data = await response.json()
+      
+      if (data.fileType === 'image') {
+        // Handle image message
         console.log('📤 Sending image message:', {
           type: 'image',
           fileUrl: data.fileUrl,
@@ -110,21 +117,51 @@ export default function MessageInput() {
         })
 
         toast.success('Image sent successfully!')
-      } else {
-        // Handle other file types (for now, just show a message)
-        toast.error('Only image files are supported for now')
+      } else if (data.fileType === 'audio') {
+        // Handle audio message
+        console.log('🎤 Sending audio message:', {
+          type: 'voice',
+          fileUrl: data.fileUrl,
+          fileName: file.name,
+          fileSize: file.size,
+          duration: data.duration
+        })
+        
+        sendMessage('[Voice Message]', 'voice', {
+          fileUrl: data.fileUrl,
+          fileName: file.name,
+          fileSize: file.size,
+          duration: data.duration
+        })
+
+        toast.success('Voice message sent successfully!')
       }
+
+      // Clean up preview if it was an image
+      if (file.type.startsWith('image/') && preview) {
+        URL.revokeObjectURL(preview)
+        setPreview(null)
+      }
+
     } catch (error) {
-      console.error('Error uploading image:', error)
-      toast.error(error instanceof Error ? error.message : 'Failed to upload image')
+      console.error('Error uploading file:', error)
+      toast.error(error instanceof Error ? error.message : 'Failed to upload file')
     } finally {
-      setIsUploadingImage(false)
+      setUploading(false)
       setShowFileInput(false)
       // Reset file input
       if (fileInputRef.current) {
         fileInputRef.current.value = ''
       }
     }
+  }, [token, onImageUpload, preview])
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !currentChat) return
+
+    // Use the same logic as onDrop
+    await onDrop([file])
   }
 
   const startRecording = async () => {
@@ -137,15 +174,55 @@ export default function MessageInput() {
         audioChunksRef.current.push(event.data)
       }
 
-      mediaRecorderRef.current.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' })
-        const audioUrl = URL.createObjectURL(audioBlob)
-        
-        if (currentChat) {
-          sendMessage('', 'voice', {
-            fileUrl: audioUrl,
-            duration: Math.round(audioChunksRef.current.length / 1000) // Rough estimate
+      mediaRecorderRef.current.onstop = async () => {
+        try {
+          // Create audio blob
+          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' })
+          
+          // Create a File object from the blob
+          const audioFile = new File([audioBlob], `voice-message-${Date.now()}.wav`, { type: 'audio/wav' })
+          
+          // Upload to Cloudinary
+          const formData = new FormData()
+          formData.append('file', audioFile)
+
+          const response = await fetch('/api/upload', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            },
+            body: formData
           })
+
+          if (!response.ok) {
+            const errorData = await response.json()
+            throw new Error(errorData.error || 'Audio upload failed')
+          }
+
+          const data = await response.json()
+          
+          if (currentChat) {
+            console.log('🎤 Sending voice message:', {
+              type: 'voice',
+              fileUrl: data.fileUrl,
+              fileName: audioFile.name,
+              fileSize: audioFile.size,
+              duration: data.duration
+            })
+            
+            // Send voice message with Cloudinary URL
+            sendMessage('[Voice Message]', 'voice', {
+              fileUrl: data.fileUrl,
+              fileName: audioFile.name,
+              fileSize: audioFile.size,
+              duration: data.duration
+            })
+
+            toast.success('Voice message sent successfully!')
+          }
+        } catch (error) {
+          console.error('Error uploading voice message:', error)
+          toast.error('Failed to upload voice message')
         }
       }
 
@@ -153,6 +230,7 @@ export default function MessageInput() {
       setIsRecording(true)
     } catch (error) {
       console.error('Error accessing microphone:', error)
+      toast.error('Failed to access microphone')
     }
   }
 
@@ -238,15 +316,15 @@ export default function MessageInput() {
               type="file"
               onChange={handleFileUpload}
               className="hidden"
-              accept="image/*"
+              accept="image/*,audio/*"
             />
             <div className="grid grid-cols-1 gap-2">
               <button
                 onClick={() => fileInputRef.current?.click()}
-                disabled={isUploadingImage}
+                disabled={uploading}
                 className="p-3 border-2 border-dashed border-gray-300 rounded-lg text-center hover:border-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isUploadingImage ? (
+                {uploading ? (
                   <>
                     <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
                     <p className="text-sm text-blue-600">Uploading...</p>
@@ -254,8 +332,8 @@ export default function MessageInput() {
                 ) : (
                   <>
                     <PaperClipIcon className="w-6 h-6 mx-auto mb-2 text-gray-400" />
-                    <p className="text-sm text-gray-600">Send Image</p>
-                    <p className="text-xs text-gray-500">JPG, PNG, GIF, WebP</p>
+                    <p className="text-sm text-gray-600">Send File</p>
+                    <p className="text-xs text-gray-500">Images & Audio (JPG, PNG, WAV, MP3)</p>
                   </>
                 )}
               </button>
