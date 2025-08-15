@@ -106,7 +106,12 @@ export function SocketProvider({ children }: { children: ReactNode }) {
   // Initialize socket connection
   useEffect(() => {
     if (token && user) {
-      const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3000'
+      // Automatically detect the current domain for Socket.io connection
+      const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 
+        (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000')
+      
+      console.log('🔌 Connecting to Socket.io at:', socketUrl)
+      
       const newSocket = io(socketUrl, {
         auth: { token }
       })
