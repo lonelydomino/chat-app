@@ -218,15 +218,16 @@ function initializeSocket(server: Server) {
     });
 
     // Handle video call signaling
-    socket.on('video-call-request', (data: { targetUserId: string; chatId: string }) => {
+    socket.on('video-call-request', (data: { targetUserId: string; chatId: string; offer: any }) => {
       io.to(`user:${data.targetUserId}`).emit('video-call-incoming', {
         from: socket.userId,
         fromUsername: socket.username,
-        chatId: data.chatId
+        chatId: data.chatId,
+        offer: data.offer
       });
     });
 
-    socket.on('video-call-answer', (data: { targetUserId: string; answer: any }) => {
+    socket.on('video-call-answer', (data: { targetUserId: string; answer: boolean }) => {
       io.to(`user:${data.targetUserId}`).emit('video-call-answered', {
         from: socket.userId,
         answer: data.answer
@@ -237,6 +238,20 @@ function initializeSocket(server: Server) {
       io.to(`user:${data.targetUserId}`).emit('video-call-signal', {
         from: socket.userId,
         signal: data.signal
+      });
+    });
+
+    socket.on('video-call-end', (data: { targetUserId: string; chatId: string }) => {
+      io.to(`user:${data.targetUserId}`).emit('video-call-ended', {
+        from: socket.userId,
+        chatId: data.chatId
+      });
+    });
+
+    socket.on('video-call-reject', (data: { targetUserId: string; chatId: string }) => {
+      io.to(`user:${data.targetUserId}`).emit('video-call-rejected', {
+        from: socket.userId,
+        chatId: data.chatId
       });
     });
 

@@ -212,6 +212,16 @@ export function SocketProvider({ children }: { children: ReactNode }) {
         toast.success(`Incoming video call from ${data.fromUsername}`)
       })
 
+      newSocket.on('video-call-rejected', (data: { from: string; chatId: string }) => {
+        console.log('📹 Video call rejected by:', data.from)
+        toast.error('Video call was rejected')
+      })
+
+      newSocket.on('video-call-ended', (data: { from: string; chatId: string }) => {
+        console.log('📹 Video call ended by:', data.from)
+        toast('Video call ended', { icon: '📹' })
+      })
+
       newSocket.on('voice-call-incoming', (data: { from: string; fromUsername: string; chatId: string; offer: any }) => {
         console.log('📞 Incoming voice call from:', data.fromUsername)
         toast.success(`Incoming voice call from ${data.fromUsername}`)
