@@ -212,6 +212,50 @@ export function SocketProvider({ children }: { children: ReactNode }) {
         toast.success(`Incoming video call from ${data.fromUsername}`)
       })
 
+      newSocket.on('voice-call-incoming', (data: { from: string; fromUsername: string; chatId: string; offer: any }) => {
+        console.log('📞 Incoming voice call from:', data.fromUsername)
+        toast.success(`Incoming voice call from ${data.fromUsername}`)
+        
+        // Emit custom event for voice call handling
+        const event = new CustomEvent('voice-call-incoming', { 
+          detail: { 
+            from: data.from, 
+            fromUsername: data.fromUsername, 
+            chatId: data.chatId,
+            offer: data.offer
+          } 
+        })
+        window.dispatchEvent(event)
+      })
+
+      newSocket.on('voice-call-answered', (data: { from: string; answer: any }) => {
+        console.log('📞 Voice call answered by:', data.from)
+        // Emit custom event for voice call handling
+        const event = new CustomEvent('voice-call-answered', { 
+          detail: { from: data.from, answer: data.answer } 
+        })
+        window.dispatchEvent(event)
+      })
+
+      newSocket.on('voice-call-signal', (data: { from: string; signal: any }) => {
+        console.log('📞 Voice call signal from:', data.from)
+        // Emit custom event for voice call handling
+        const event = new CustomEvent('voice-call-signal', { 
+          detail: { from: data.from, signal: data.signal } 
+        })
+        window.dispatchEvent(event)
+      })
+
+      newSocket.on('voice-call-rejected', (data: { from: string; chatId: string }) => {
+        console.log('📞 Voice call rejected by:', data.from)
+        toast.error('Voice call was rejected')
+      })
+
+      newSocket.on('voice-call-ended', (data: { from: string; chatId: string }) => {
+        console.log('📞 Voice call ended by:', data.from)
+        toast('Voice call ended', { icon: '📞' })
+      })
+
       setSocket(newSocket)
 
       return () => {

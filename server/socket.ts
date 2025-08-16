@@ -240,6 +240,48 @@ function initializeSocket(server: Server) {
       });
     });
 
+    // Handle voice calling
+    socket.on('voice-call-request', (data: { targetUserId: string; chatId: string; offer: any }) => {
+      console.log('📞 Voice call request from', socket.username, 'to', data.targetUserId);
+      io.to(`user:${data.targetUserId}`).emit('voice-call-incoming', {
+        from: socket.userId,
+        fromUsername: socket.username,
+        chatId: data.chatId,
+        offer: data.offer
+      });
+    });
+
+    socket.on('voice-call-answer', (data: { targetUserId: string; answer: any }) => {
+      console.log('📞 Voice call answer from', socket.username, 'to', data.targetUserId);
+      io.to(`user:${data.targetUserId}`).emit('voice-call-answered', {
+        from: socket.userId,
+        answer: data.answer
+      });
+    });
+
+    socket.on('voice-call-signal', (data: { targetUserId: string; signal: any }) => {
+      io.to(`user:${data.targetUserId}`).emit('voice-call-signal', {
+        from: socket.userId,
+        signal: data.signal
+      });
+    });
+
+    socket.on('voice-call-reject', (data: { targetUserId: string; chatId: string }) => {
+      console.log('📞 Voice call rejected by', socket.username);
+      io.to(`user:${data.targetUserId}`).emit('voice-call-rejected', {
+        from: socket.userId,
+        chatId: data.chatId
+      });
+    });
+
+    socket.on('voice-call-end', (data: { targetUserId: string; chatId: string }) => {
+      console.log('📞 Voice call ended by', socket.username);
+      io.to(`user:${data.targetUserId}`).emit('voice-call-ended', {
+        from: socket.userId,
+        chatId: data.chatId
+      });
+    });
+
     // Handle disconnection
     socket.on('disconnect', async () => {
       console.log(`User disconnected: ${socket.username} (${socket.userId})`);

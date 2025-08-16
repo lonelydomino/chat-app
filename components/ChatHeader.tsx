@@ -48,9 +48,10 @@ interface Chat {
 interface ChatHeaderProps {
   chat: Chat
   onVideoCall: () => void
+  onVoiceCall: () => void
 }
 
-export default function ChatHeader({ chat, onVideoCall }: ChatHeaderProps) {
+export default function ChatHeader({ chat, onVideoCall, onVoiceCall }: ChatHeaderProps) {
   const { user } = useAuth()
   const { deleteChat } = useSocket()
   const [showMenu, setShowMenu] = useState(false)
@@ -168,6 +169,7 @@ export default function ChatHeader({ chat, onVideoCall }: ChatHeaderProps) {
         </button>
         
         <button
+          onClick={onVoiceCall}
           className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-full transition-colors"
           title="Voice call"
         >

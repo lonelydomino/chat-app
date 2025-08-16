@@ -10,9 +10,10 @@ import { motion } from 'framer-motion'
 
 interface ChatAreaProps {
   onVideoCall: () => void
+  onVoiceCall: () => void
 }
 
-export default function ChatArea({ onVideoCall }: ChatAreaProps) {
+export default function ChatArea({ onVideoCall, onVoiceCall }: ChatAreaProps) {
   console.log('🔥 ChatArea rendering')
   
   const { currentChat, messages, joinChat, leaveChat, fetchMessages, markMessagesAsRead } = useSocket()
@@ -141,7 +142,7 @@ export default function ChatArea({ onVideoCall }: ChatAreaProps) {
 
   return (
     <div className="chat-main">
-      <ChatHeader chat={currentChat} onVideoCall={onVideoCall} />
+      <ChatHeader chat={currentChat} onVideoCall={onVideoCall} onVoiceCall={onVoiceCall} />
       
       {isLoading ? (
         <div className="flex-1 flex items-center justify-center">
