@@ -207,9 +207,20 @@ export function SocketProvider({ children }: { children: ReactNode }) {
         })))
       })
 
-      newSocket.on('video-call-incoming', (data: { from: string; fromUsername: string; chatId: string }) => {
-        // Handle incoming video call
+      newSocket.on('video-call-incoming', (data: { from: string; fromUsername: string; chatId: string; offer: any }) => {
+        console.log('📹 Incoming video call from:', data.fromUsername)
         toast.success(`Incoming video call from ${data.fromUsername}`)
+        
+        // Emit custom event for video call handling
+        const event = new CustomEvent('video-call-incoming', { 
+          detail: { 
+            from: data.from, 
+            fromUsername: data.fromUsername, 
+            chatId: data.chatId,
+            offer: data.offer
+          } 
+        })
+        window.dispatchEvent(event)
       })
 
       newSocket.on('video-call-rejected', (data: { from: string; chatId: string }) => {

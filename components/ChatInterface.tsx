@@ -47,6 +47,11 @@ export default function ChatInterface() {
     setShowVoiceCallModal(true)
   }
 
+  // Handle incoming video call
+  const handleIncomingVideoCall = (caller: any) => {
+    setShowVideoCallModal(true)
+  }
+
   // Listen for incoming voice calls
   useEffect(() => {
     const handleVoiceCallIncoming = (event: CustomEvent) => {
@@ -84,6 +89,31 @@ export default function ChatInterface() {
       window.removeEventListener('voice-call-incoming', handleVoiceCallIncoming as EventListener)
       window.removeEventListener('voice-call-answered', handleVoiceCallAnswered as EventListener)
       window.removeEventListener('voice-call-signal', handleVoiceCallSignal as EventListener)
+    }
+  }, [currentChat])
+
+  // Listen for incoming video calls
+  useEffect(() => {
+    const handleVideoCallIncoming = (event: CustomEvent) => {
+      const { from, fromUsername, chatId, offer } = event.detail
+      
+      // Check if this call is for the current chat
+      if (currentChat?._id === chatId) {
+        console.log('📹 Incoming video call for current chat:', chatId)
+        const caller = {
+          _id: from,
+          username: fromUsername
+        }
+        handleIncomingVideoCall(caller)
+      }
+    }
+
+    // Add event listener
+    window.addEventListener('video-call-incoming', handleVideoCallIncoming as EventListener)
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('video-call-incoming', handleVideoCallIncoming as EventListener)
     }
   }, [currentChat])
 

@@ -49,11 +49,25 @@ export default function VideoCallModal({ chat, onClose }: VideoCallModalProps) {
   const [isCallActive, setIsCallActive] = useState(false)
   const [isIncomingCall, setIsIncomingCall] = useState(false)
   const [callStatus, setCallStatus] = useState<'idle' | 'calling' | 'connected' | 'ended'>('idle')
+  const [incomingCallData, setIncomingCallData] = useState<{
+    from: string
+    fromUsername: string
+    chatId: string
+    offer: any
+  } | null>(null)
   const localVideoRef = useRef<HTMLVideoElement>(null)
   const remoteVideoRef = useRef<HTMLVideoElement>(null)
   const localStreamRef = useRef<MediaStream | null>(null)
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null)
 
+  console.log('📹 VideoCallModal: Component rendered with props:', { 
+    chatId: chat._id, 
+    chatType: chat.type, 
+    hasSocket: !!socket,
+    isIncomingCall,
+    callStatus,
+    incomingCallData
+  })
 
 
   // Cleanup on unmount
@@ -70,10 +84,12 @@ export default function VideoCallModal({ chat, onClose }: VideoCallModalProps) {
 
 
 
-  const handleIncomingCall = useCallback((data: { from: string; fromUsername: string; chatId: string }) => {
+  const handleIncomingCall = useCallback((data: { from: string; fromUsername: string; chatId: string; offer: any }) => {
+    console.log('📹 Incoming video call received:', data)
+    setIncomingCallData(data)
     setIsIncomingCall(true)
     setCallStatus('idle')
-    toast.success(`Incoming call from ${data.fromUsername}`)
+    toast.success(`Incoming video call from ${data.fromUsername}`)
   }, [])
 
   const initializePeerConnection = useCallback(async () => {
@@ -281,19 +297,34 @@ export default function VideoCallModal({ chat, onClose }: VideoCallModalProps) {
   }, [socket, chat.type, chat.participants, chat._id, currentUser?._id, initializePeerConnection, callStatus])
 
   const answerCall = useCallback(async (accept: boolean) => {
-    if (!socket) return
+    if (!socket || !incomingCallData) return
 
-    const targetUserId = chat.participants.find(p => p._id !== currentUser?._id)?._id
+    const targetUserId = incomingCallData.from
     if (!targetUserId) return
-
-    socket.emit('video-call-answer', {
-      targetUserId,
-      answer: accept
-    })
 
     if (accept) {
       try {
+        console.log('📹 Accepting incoming video call')
         await initializePeerConnection()
+        
+        // Handle the incoming offer
+        if (peerConnectionRef.current && incomingCallData.offer) {
+          console.log('📹 Setting remote description from offer')
+          await peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(incomingCallData.offer))
+          
+          // Create answer
+          const answer = await peerConnectionRef.current.createAnswer()
+          await peerConnectionRef.current.setLocalDescription(answer)
+          
+          // Send answer back
+          socket.emit('video-call-signal', {
+            targetUserId,
+            signal: answer
+          })
+          
+          console.log('📹 Answer sent, call should connect')
+        }
+        
         setCallStatus('connected')
       } catch (error) {
         console.error('Error accepting call:', error)
@@ -301,11 +332,32 @@ export default function VideoCallModal({ chat, onClose }: VideoCallModalProps) {
         setCallStatus('ended')
       }
     } else {
+      console.log('📹 Rejecting incoming video call')
+      // Send rejection signal
+      socket.emit('video-call-reject', {
+        targetUserId,
+        chatId: incomingCallData.chatId
+      })
       setCallStatus('ended')
     }
 
     setIsIncomingCall(false)
-  }, [socket, chat.participants, currentUser?._id, initializePeerConnection])
+    setIncomingCallData(null)
+  }, [socket, incomingCallData, initializePeerConnection])
+
+  const rejectCall = useCallback(() => {
+    if (!socket || !incomingCallData) return
+
+    console.log('📹 Rejecting incoming video call')
+    socket.emit('video-call-reject', {
+      targetUserId: incomingCallData.from,
+      chatId: incomingCallData.chatId
+    })
+    
+    setCallStatus('ended')
+    setIsIncomingCall(false)
+    setIncomingCallData(null)
+  }, [socket, incomingCallData])
 
   const endCall = useCallback(() => {
     console.log('📞 Ending call and cleaning up resources')
@@ -367,6 +419,8 @@ export default function VideoCallModal({ chat, onClose }: VideoCallModalProps) {
   useEffect(() => {
     if (!socket) return
 
+    console.log('📹 VideoCallModal: Setting up socket event handlers')
+
     socket.on('video-call-incoming', handleIncomingCall)
     socket.on('video-call-answered', handleCallAnswered)
     socket.on('video-call-signal', handleCallSignal)
@@ -374,6 +428,7 @@ export default function VideoCallModal({ chat, onClose }: VideoCallModalProps) {
     socket.on('video-call-rejected', handleCallRejected)
 
     return () => {
+      console.log('📹 VideoCallModal: Cleaning up socket event handlers')
       socket.off('video-call-incoming', handleIncomingCall)
       socket.off('video-call-answered', handleCallAnswered)
       socket.off('video-call-signal', handleCallSignal)
@@ -452,10 +507,10 @@ export default function VideoCallModal({ chat, onClose }: VideoCallModalProps) {
                   <PhoneIcon className="w-12 h-12 text-green-600" />
                 </div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  Incoming Call
+                  Incoming Video Call
                 </h3>
                 <p className="text-gray-600 mb-6">
-                  {getChatDisplayName()} is calling you
+                  {incomingCallData?.fromUsername || 'Unknown User'} is calling you
                 </p>
                 <div className="flex justify-center space-x-4">
                   <button
@@ -465,7 +520,7 @@ export default function VideoCallModal({ chat, onClose }: VideoCallModalProps) {
                     Answer
                   </button>
                   <button
-                    onClick={() => answerCall(false)}
+                    onClick={rejectCall}
                     className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
                   >
                     Decline
