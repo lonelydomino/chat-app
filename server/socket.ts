@@ -70,10 +70,29 @@ function initializeSocket(server: Server) {
 
     // Handle joining a specific chat
     socket.on('join-chat', async (chatId: string) => {
+      console.log('🏠 User joining chat:', {
+        userId: socket.userId,
+        username: socket.username,
+        chatId: chatId
+      })
+
       const chat = await Chat.findOne({ _id: chatId, participants: socket.userId });
       if (chat) {
+        console.log('✅ User authorized to join chat:', {
+          chatId: chat._id,
+          chatType: chat.type,
+          participants: chat.participants.length,
+          userIsParticipant: chat.participants.includes(socket.userId)
+        })
+        
         socket.join(`chat:${chatId}`);
+        console.log('🔗 User joined chat room:', `chat:${chatId}`)
         socket.emit('chat-joined', chatId);
+      } else {
+        console.log('❌ User not authorized to join chat:', {
+          userId: socket.userId,
+          chatId: chatId
+        })
       }
     });
 
@@ -105,6 +124,14 @@ function initializeSocket(server: Server) {
       replyTo?: string;
     }) => {
       try {
+        console.log('📨 Received send-message:', {
+          chatId: messageData.chatId,
+          content: messageData.content,
+          type: messageData.type,
+          sender: socket.userId,
+          senderUsername: socket.username
+        })
+
         const message = new Message({
           chatId: messageData.chatId,
           sender: socket.userId,
@@ -119,6 +146,7 @@ function initializeSocket(server: Server) {
         });
 
         await message.save();
+        console.log('💾 Message saved to database:', message._id)
 
         // Update chat's last message
         await Chat.findByIdAndUpdate(messageData.chatId, {
@@ -132,6 +160,13 @@ function initializeSocket(server: Server) {
 
         // Emit message to all users in the chat
         const chat = await Chat.findById(messageData.chatId).populate('participants', 'username avatar');
+        console.log('🔍 Found chat:', {
+          chatId: chat?._id,
+          type: chat?.type,
+          participantsCount: chat?.participants?.length,
+          participants: chat?.participants?.map((p: any) => p.username)
+        })
+
         const populatedMessage = await Message.findById(message._id)
           .populate('sender', 'username avatar')
           .populate('replyTo');
@@ -143,6 +178,7 @@ function initializeSocket(server: Server) {
             content: populatedMessage.decryptContent()
           };
 
+          console.log('📤 Emitting new-message to chat room:', `chat:${messageData.chatId}`)
           io.to(`chat:${messageData.chatId}`).emit('new-message', {
             message: decryptedMessage,
             chat: chat
@@ -157,6 +193,8 @@ function initializeSocket(server: Server) {
               content: messageData.content.substring(0, 50)
             });
           });
+        } else {
+          console.error('❌ Failed to populate message or chat')
         }
 
       } catch (error) {

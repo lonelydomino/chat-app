@@ -133,10 +133,20 @@ export function SocketProvider({ children }: { children: ReactNode }) {
           content: data.message.content,
           type: data.message.type,
           chatId: data.message.chatId,
-          sender: data.message.sender.username
+          sender: data.message.sender.username,
+          currentChatId: currentChat?._id,
+          isCurrentChat: currentChat?._id === data.message.chatId
         })
         
-        setMessages(prev => [...prev, data.message])
+        setMessages(prev => {
+          const updated = [...prev, data.message]
+          console.log('📝 Updated messages array:', {
+            previousCount: prev.length,
+            newCount: updated.length,
+            newMessage: data.message.content
+          })
+          return updated
+        })
         
         // Update chat's last message
         setChats(prev => prev.map(chat => 
@@ -286,7 +296,14 @@ export function SocketProvider({ children }: { children: ReactNode }) {
   }, [token, user])
 
   const sendMessage = (content: string, type: 'text' | 'file' | 'voice' | 'image' = 'text', fileData?: any) => {
-    console.log('�� sendMessage called with:', { content, type, fileData })
+    console.log('📤 sendMessage called with:', { 
+      content, 
+      type, 
+      fileData,
+      currentChat: currentChat?._id,
+      chatType: currentChat?.type,
+      participants: currentChat?.participants?.length
+    })
     
     if (socket && currentChat) {
       console.log('✅ Sending message via socket to chat:', currentChat._id)
@@ -302,7 +319,8 @@ export function SocketProvider({ children }: { children: ReactNode }) {
       console.log('❌ Cannot send - missing socket or chat:', { 
         hasSocket: !!socket, 
         hasCurrentChat: !!currentChat,
-        currentChatId: currentChat?._id 
+        currentChatId: currentChat?._id,
+        currentChatType: currentChat?.type
       })
     }
   }
