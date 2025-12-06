@@ -2,20 +2,15 @@ const { Server: SocketIOServer } = require('socket.io');
 const jwt = require('jsonwebtoken');
 
 // Import database functions
-const { getRedisClient } = require('../lib/database');
 const { User, Chat, Message } = require('../models/index.js');
 
 async function updateUserStatus(userId, status) {
   try {
+    // Store user status directly in MongoDB (no expiration, persistent storage)
     await User.findByIdAndUpdate(userId, {
       status,
       lastSeen: new Date()
     });
-
-    // Store in Redis for quick access
-    const redis = await getRedisClient();
-    await redis.hSet(`user:${userId}`, 'status', status);
-    await redis.hSet(`user:${userId}`, 'lastSeen', new Date().toISOString());
   } catch (error) {
     console.error('Error updating user status:', error);
   }

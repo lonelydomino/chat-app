@@ -3,20 +3,15 @@ import jwt from 'jsonwebtoken';
 import { Server } from 'http';
 
 // Import database functions
-import { getRedisClient } from '../lib/database';
 import { User, Chat, Message, IUser, IChat, IMessage } from '../models/index';
 
 async function updateUserStatus(userId: string, status: 'online' | 'offline' | 'away') {
   try {
+    // Store user status directly in MongoDB (no expiration, persistent storage)
     await User.findByIdAndUpdate(userId, {
       status,
       lastSeen: new Date()
     });
-
-    // Store in Redis for quick access
-    const redis = await getRedisClient();
-    await redis.hSet(`user:${userId}`, 'status', status);
-    await redis.hSet(`user:${userId}`, 'lastSeen', new Date().toISOString());
   } catch (error) {
     console.error('Error updating user status:', error);
   }

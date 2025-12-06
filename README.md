@@ -1,6 +1,6 @@
 # Real-time Chat Application
 
-A modern, full-featured real-time chat application built with Next.js, Socket.io, MongoDB, and Redis. This application demonstrates advanced real-time programming concepts and provides a complete chat experience with group chats, file sharing, voice messages, and video calls.
+A modern, full-featured real-time chat application built with Next.js, Socket.io, and MongoDB. This application demonstrates advanced real-time programming concepts and provides a complete chat experience with group chats, file sharing, voice messages, and video calls.
 
 ## 🚀 Features
 
@@ -47,8 +47,7 @@ A modern, full-featured real-time chat application built with Next.js, Socket.io
 ### Backend
 - **Node.js**: JavaScript runtime
 - **Socket.io**: Real-time bidirectional communication
-- **MongoDB**: NoSQL database with Mongoose ODM
-- **Redis**: In-memory data store for caching
+- **MongoDB**: NoSQL database with Mongoose ODM (persistent storage, no data expiration)
 - **JWT**: JSON Web Tokens for authentication
 - **bcryptjs**: Password hashing
 - **crypto-js**: Message encryption
@@ -65,7 +64,6 @@ Before running this application, make sure you have the following installed:
 
 - **Node.js** (v18 or higher)
 - **MongoDB** (v5 or higher)
-- **Redis** (v6 or higher)
 - **npm** or **yarn**
 
 ## 🚀 Installation
@@ -90,7 +88,6 @@ Before running this application, make sure you have the following installed:
    ```env
    # Database
    MONGODB_URI=mongodb://localhost:27017/chat-app
-   REDIS_URL=redis://localhost:6379
 
    # JWT
    JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
@@ -107,13 +104,10 @@ Before running this application, make sure you have the following installed:
    ENCRYPTION_KEY=your-32-character-encryption-key-here
    ```
 
-4. **Start MongoDB and Redis**
+4. **Start MongoDB**
    ```bash
    # Start MongoDB (make sure it's running)
    mongod
-
-   # Start Redis (make sure it's running)
-   redis-server
    ```
 
 5. **Run the development server**
@@ -166,8 +160,7 @@ chat-app/
 ### Database Setup
 
 1. **MongoDB**: Make sure MongoDB is running on your system
-2. **Redis**: Ensure Redis server is running
-3. **Environment Variables**: Configure all required environment variables
+2. **Environment Variables**: Configure all required environment variables
 
 ### File Upload
 
@@ -204,7 +197,6 @@ Make sure to update your environment variables for production:
 ```env
 NODE_ENV=production
 MONGODB_URI=your-production-mongodb-uri
-REDIS_URL=your-production-redis-url
 JWT_SECRET=your-production-jwt-secret
 ENCRYPTION_KEY=your-production-encryption-key
 ```
@@ -243,7 +235,7 @@ This project is licensed under the MIT License.
 If you encounter any issues:
 
 1. Check the console for error messages
-2. Ensure MongoDB and Redis are running
+2. Ensure MongoDB is running
 3. Verify all environment variables are set correctly
 4. Check the browser console for client-side errors
 
@@ -266,7 +258,7 @@ If you encounter any issues:
 - Socket.io for real-time communication
 - Tailwind CSS for the beautiful styling
 - Framer Motion for smooth animations
-- MongoDB and Redis for data storage
+- MongoDB for persistent data storage
 
 ---
 

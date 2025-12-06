@@ -3,7 +3,7 @@ const { createServer } = require('http')
 const { parse } = require('url')
 const next = require('next')
 const { initializeSocket } = require('./server/socket.js')
-const { connectMongoDB, connectRedis } = require('./lib/database.js')
+const { connectMongoDB } = require('./lib/database.js')
 
 const dev = process.env.NODE_ENV !== 'production'
 const hostname = 'localhost'
@@ -26,9 +26,6 @@ app.prepare().then(async () => {
     
     await connectMongoDB()
     console.log('✅ MongoDB connected')
-    
-    await connectRedis()
-    console.log('✅ Redis connected')
 
     // Create Express app
     const expressApp = express()
