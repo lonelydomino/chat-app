@@ -18,6 +18,18 @@ export default function AuthForm() {
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {}
 
+    // Validate email (for both login and registration)
+    const trimmedEmail = formData.email.trim()
+    if (!trimmedEmail) {
+      newErrors.email = 'Email is required'
+    } else {
+      // Basic email format validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(trimmedEmail)) {
+        newErrors.email = 'Please enter a valid email address'
+      }
+    }
+
     if (!isLogin) {
       // Validate username
       const trimmedUsername = formData.username.trim()
@@ -53,9 +65,9 @@ export default function AuthForm() {
 
     try {
       if (isLogin) {
-        await login(formData.email, formData.password)
+        await login(formData.email.trim(), formData.password)
       } else {
-        await register(formData.username.trim(), formData.email, formData.password)
+        await register(formData.username.trim(), formData.email.trim(), formData.password)
       }
       // Clear errors on success
       setErrors({})
@@ -138,9 +150,14 @@ export default function AuthForm() {
               value={formData.email}
               onChange={handleInputChange}
               required
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
+                errors.email ? 'border-red-500' : 'border-gray-300'
+              }`}
               placeholder="Enter your email"
             />
+            {errors.email && (
+              <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+            )}
           </div>
 
           <div>
