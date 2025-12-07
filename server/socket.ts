@@ -18,10 +18,34 @@ async function updateUserStatus(userId: string, status: 'online' | 'offline' | '
 }
 
 function initializeSocket(server: Server) {
+  // Allow multiple origins for development
+  const allowedOrigins = [
+    process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:3000",
+    "http://localhost:3000",
+    "http://0.0.0.0:3000",
+    "http://127.0.0.1:3000"
+  ];
+
   const io = new SocketIOServer(server, {
     cors: {
-      origin: process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:3000",
-      methods: ["GET", "POST"]
+      origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        
+        // Check if origin is in allowed list
+        if (allowedOrigins.some(allowed => origin.includes(allowed.replace('http://', '')))) {
+          callback(null, true);
+        } else {
+          // In development, be more permissive
+          if (process.env.NODE_ENV !== 'production') {
+            callback(null, true);
+          } else {
+            callback(new Error('Not allowed by CORS'));
+          }
+        }
+      },
+      methods: ["GET", "POST"],
+      credentials: true
     }
   });
 
