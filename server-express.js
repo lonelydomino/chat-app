@@ -84,7 +84,6 @@ app.prepare().then(async () => {
       }
       console.log(`🚀 Express Server started successfully!`)
       console.log(`🌐 Listening on: http://0.0.0.0:${port}`)
-      console.log(`🔗 Railway URL: https://chat-app-production-8492.up.railway.app`)
       console.log(`🔌 Socket.io server is running`)
       console.log(`📊 Environment: ${process.env.NODE_ENV}`)
       console.log(`🔑 Port: ${port}`)

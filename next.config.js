@@ -1,15 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Disable image optimization for Railway deployment
+  // Disable image optimization
   images: {
     unoptimized: true,
     domains: ['localhost'],
   },
   
-  // Railway deployment configuration
-  // output: 'standalone', // Commented out - causes start issues
-  
-  // Webpack configuration for Railway
+  // Webpack configuration
   webpack: (config, { isServer }) => {
     // Add fallbacks for Node.js modules
     if (!isServer) {

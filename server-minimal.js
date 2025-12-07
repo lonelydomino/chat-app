@@ -68,7 +68,6 @@ const server = http.createServer((req, res) => {
 server.listen(port, '0.0.0.0', () => {
   console.log(`✅ Minimal server listening on port ${port}`)
   console.log(`🌐 Access: http://0.0.0.0:${port}`)
-  console.log(`🔗 Railway URL: https://chat-app-production-8492.up.railway.app`)
 })
 
 server.on('error', (err) => {

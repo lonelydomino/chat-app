@@ -12,13 +12,7 @@
     "lint": "next lint",
     "setup": "node setup.js",
     "troubleshoot": "node troubleshoot.js",
-    "install-deps": "yarn install",
-    "railway:build": "NODE_ENV=production next build",
-    "railway:start": "NODE_ENV=production node server.js",
-    "railway:install": "yarn install --frozen-lockfile --production=false",
-    "railway:debug": "node scripts/test-build.js",
-    "railway:start-standalone": "NODE_ENV=production node .next/standalone/server.js",
-    "railway:test": "node scripts/railway-test.js"
+    "install-deps": "yarn install"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.17",
