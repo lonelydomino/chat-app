@@ -19,6 +19,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate username length
+    const trimmedUsername = username.trim();
+    if (trimmedUsername.length < 3) {
+      return NextResponse.json(
+        { error: 'Username must be at least 3 characters long' },
+        { status: 400 }
+      );
+    }
+
+    if (trimmedUsername.length > 30) {
+      return NextResponse.json(
+        { error: 'Username must be no more than 30 characters long' },
+        { status: 400 }
+      );
+    }
+
     if (password.length < 6) {
       return NextResponse.json(
         { error: 'Password must be at least 6 characters long' },
@@ -40,7 +56,7 @@ export async function POST(request: NextRequest) {
 
     // Create new user
     const user = new User({
-      username,
+      username: trimmedUsername,
       email,
       password
     });
@@ -69,10 +85,30 @@ export async function POST(request: NextRequest) {
       token
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Registration error:', error);
+    
+    // Handle Mongoose validation errors
+    if (error.name === 'ValidationError') {
+      const firstError = Object.values(error.errors)[0] as any;
+      return NextResponse.json(
+        { error: firstError?.message || 'Validation error' },
+        { status: 400 }
+      );
+    }
+    
+    // Handle duplicate key error (username or email already exists)
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyPattern)[0];
+      return NextResponse.json(
+        { error: `This ${field} is already taken` },
+        { status: 409 }
+      );
+    }
+    
+    // Handle other errors
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: error.message || 'Internal server error' },
       { status: 500 }
     );
   }

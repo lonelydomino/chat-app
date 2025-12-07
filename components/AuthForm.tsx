@@ -12,13 +12,42 @@ export default function AuthForm() {
     password: '',
     confirmPassword: ''
   })
+  const [errors, setErrors] = useState<{ [key: string]: string }>({})
   const { login, register, isLoading } = useAuth()
+
+  const validateForm = () => {
+    const newErrors: { [key: string]: string } = {}
+
+    if (!isLogin) {
+      // Validate username
+      const trimmedUsername = formData.username.trim()
+      if (!trimmedUsername) {
+        newErrors.username = 'Username is required'
+      } else if (trimmedUsername.length < 3) {
+        newErrors.username = 'Username must be at least 3 characters long'
+      } else if (trimmedUsername.length > 30) {
+        newErrors.username = 'Username must be no more than 30 characters long'
+      }
+
+      // Validate password
+      if (formData.password.length < 6) {
+        newErrors.password = 'Password must be at least 6 characters long'
+      }
+
+      // Validate password confirmation
+      if (formData.password !== formData.confirmPassword) {
+        newErrors.confirmPassword = 'Passwords do not match'
+      }
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!isLogin && formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match')
+    if (!validateForm()) {
       return
     }
 
@@ -26,8 +55,10 @@ export default function AuthForm() {
       if (isLogin) {
         await login(formData.email, formData.password)
       } else {
-        await register(formData.username, formData.email, formData.password)
+        await register(formData.username.trim(), formData.email, formData.password)
       }
+      // Clear errors on success
+      setErrors({})
     } catch (error) {
       console.error('Auth error:', error)
     }
@@ -38,6 +69,14 @@ export default function AuthForm() {
       ...prev,
       [e.target.name]: e.target.value
     }))
+    // Clear error for this field when user starts typing
+    if (errors[e.target.name]) {
+      setErrors(prev => {
+        const newErrors = { ...prev }
+        delete newErrors[e.target.name]
+        return newErrors
+      })
+    }
   }
 
   return (
@@ -75,9 +114,16 @@ export default function AuthForm() {
                 value={formData.username}
                 onChange={handleInputChange}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                placeholder="Enter your username"
+                minLength={3}
+                maxLength={30}
+                className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
+                  errors.username ? 'border-red-500' : 'border-gray-300'
+                }`}
+                placeholder="Enter your username (min 3 characters)"
               />
+              {errors.username && (
+                <p className="mt-1 text-sm text-red-600">{errors.username}</p>
+              )}
             </div>
           )}
 
@@ -108,9 +154,15 @@ export default function AuthForm() {
               value={formData.password}
               onChange={handleInputChange}
               required
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-              placeholder="Enter your password"
+              minLength={6}
+              className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
+                errors.password ? 'border-red-500' : 'border-gray-300'
+              }`}
+              placeholder="Enter your password (min 6 characters)"
             />
+            {errors.password && (
+              <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+            )}
           </div>
 
           {!isLogin && (
@@ -125,9 +177,14 @@ export default function AuthForm() {
                 value={formData.confirmPassword}
                 onChange={handleInputChange}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
+                  errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
+                }`}
                 placeholder="Confirm your password"
               />
+              {errors.confirmPassword && (
+                <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
+              )}
             </div>
           )}
 
