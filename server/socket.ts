@@ -18,12 +18,13 @@ async function updateUserStatus(userId: string, status: 'online' | 'offline' | '
 }
 
 function initializeSocket(server: Server) {
-  // Allow multiple origins for development
+  // Allow multiple origins for development and production
   const allowedOrigins = [
     process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:3000",
     "http://localhost:3000",
     "http://0.0.0.0:3000",
-    "http://127.0.0.1:3000"
+    "http://127.0.0.1:3000",
+    "https://chat-app-qu48.onrender.com"
   ];
 
   const io = new SocketIOServer(server, {
@@ -32,14 +33,29 @@ function initializeSocket(server: Server) {
         // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
         
+        // Normalize origins for comparison (remove protocol and trailing slash)
+        const normalizeOrigin = (url: string) => {
+          if (!url) return '';
+          return url.replace(/^https?:\/\//, '').replace(/\/$/, '').toLowerCase();
+        };
+        
+        const normalizedOrigin = normalizeOrigin(origin);
+        
         // Check if origin is in allowed list
-        if (allowedOrigins.some(allowed => origin.includes(allowed.replace('http://', '')))) {
+        const isAllowed = allowedOrigins.some(allowed => {
+          const normalizedAllowed = normalizeOrigin(allowed);
+          return normalizedOrigin === normalizedAllowed || normalizedOrigin.includes(normalizedAllowed);
+        });
+        
+        if (isAllowed) {
           callback(null, true);
         } else {
           // In development, be more permissive
           if (process.env.NODE_ENV !== 'production') {
+            console.log('⚠️ Allowing origin in development:', origin);
             callback(null, true);
           } else {
+            console.error('❌ CORS blocked origin:', origin);
             callback(new Error('Not allowed by CORS'));
           }
         }

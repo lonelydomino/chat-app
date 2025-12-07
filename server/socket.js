@@ -17,12 +17,13 @@ async function updateUserStatus(userId, status) {
 }
 
 function initializeSocket(server) {
-  // Allow multiple origins for development
+  // Allow multiple origins for development and production
   const allowedOrigins = [
     process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:3000",
     "http://localhost:3000",
     "http://0.0.0.0:3000",
-    "http://127.0.0.1:3000"
+    "http://127.0.0.1:3000",
+    "https://chat-app-qu48.onrender.com"
   ];
 
   const io = new SocketIOServer(server, {
@@ -31,14 +32,29 @@ function initializeSocket(server) {
         // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
         
+        // Normalize origins for comparison (remove protocol and trailing slash)
+        const normalizeOrigin = (url) => {
+          if (!url) return '';
+          return url.replace(/^https?:\/\//, '').replace(/\/$/, '').toLowerCase();
+        };
+        
+        const normalizedOrigin = normalizeOrigin(origin);
+        
         // Check if origin is in allowed list
-        if (allowedOrigins.some(allowed => origin.includes(allowed.replace('http://', '')))) {
+        const isAllowed = allowedOrigins.some(allowed => {
+          const normalizedAllowed = normalizeOrigin(allowed);
+          return normalizedOrigin === normalizedAllowed || normalizedOrigin.includes(normalizedAllowed);
+        });
+        
+        if (isAllowed) {
           callback(null, true);
         } else {
           // In development, be more permissive
           if (process.env.NODE_ENV !== 'production') {
+            console.log('⚠️ Allowing origin in development:', origin);
             callback(null, true);
           } else {
+            console.error('❌ CORS blocked origin:', origin);
             callback(new Error('Not allowed by CORS'));
           }
         }
@@ -53,21 +69,25 @@ function initializeSocket(server) {
     try {
       const token = socket.handshake.auth.token;
       if (!token) {
-        return next(new Error('Authentication error'));
+        console.error('❌ Socket authentication failed: No token provided');
+        return next(new Error('Authentication error: No token'));
       }
 
       const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret');
       const user = await User.findById(decoded.userId);
       
       if (!user) {
-        return next(new Error('User not found'));
+        console.error('❌ Socket authentication failed: User not found', decoded.userId);
+        return next(new Error('Authentication error: User not found'));
       }
 
       socket.userId = decoded.userId;
       socket.username = user.username;
+      console.log('✅ Socket authenticated:', user.username, decoded.userId);
       next();
     } catch (error) {
-      next(new Error('Authentication error'));
+      console.error('❌ Socket authentication error:', error.message);
+      next(new Error('Authentication error: ' + error.message));
     }
   });
 
