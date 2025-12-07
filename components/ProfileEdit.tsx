@@ -152,10 +152,10 @@ export default function ProfileEdit({ onClose, onSave }: ProfileEditProps) {
         const sectionData = prev[section as keyof typeof prev]
         if (typeof sectionData === 'object' && sectionData !== null) {
           return {
-            ...prev,
-            [section]: {
+        ...prev,
+        [section]: {
               ...sectionData,
-              [key]: value
+          [key]: value
             }
           }
         }

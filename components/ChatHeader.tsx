@@ -73,7 +73,7 @@ export default function ChatHeader({ chat, onVideoCall, onVoiceCall }: ChatHeade
     } else {
       const otherParticipant = chat.participants.find(p => p._id !== user?._id)
       if (otherParticipant) {
-        return (
+      return (
           <UserAvatar 
             user={otherParticipant} 
             size="md" 
@@ -147,7 +147,7 @@ export default function ChatHeader({ chat, onVideoCall, onVoiceCall }: ChatHeade
     <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white">
       <div className="flex items-center space-x-3">
         <button onClick={handleViewProfile} className="hover:opacity-80 transition-opacity">
-          {getChatAvatar()}
+        {getChatAvatar()}
         </button>
         <div>
           <h2 className="text-lg font-semibold text-gray-900">

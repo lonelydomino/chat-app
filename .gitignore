@@ -98,7 +98,7 @@ Thumbs.db
 
 # Temporary files
 *.tmp
-*.temp
+*.temp 
 
 # Redis
 dump.rdb

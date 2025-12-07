@@ -254,7 +254,7 @@ export default function VideoCallModal({ chat, onClose }: VideoCallModalProps) {
     if (!targetUserId) return
 
     try {
-      setCallStatus('calling')
+    setCallStatus('calling')
       
       // Initialize peer connection first
       await initializePeerConnection()
@@ -265,17 +265,17 @@ export default function VideoCallModal({ chat, onClose }: VideoCallModalProps) {
         await peerConnectionRef.current.setLocalDescription(offer)
         
         // Send offer to target user
-        socket.emit('video-call-request', {
-          targetUserId,
+    socket.emit('video-call-request', {
+      targetUserId,
           chatId: chat._id,
           offer: offer
-        })
+    })
 
-        // Wait for answer
-        setTimeout(() => {
-          if (callStatus === 'calling') {
-            setCallStatus('ended')
-            toast.error('Call timed out')
+    // Wait for answer
+    setTimeout(() => {
+      if (callStatus === 'calling') {
+        setCallStatus('ended')
+        toast.error('Call timed out')
             // Clean up resources manually instead of calling endCall
             if (localStreamRef.current) {
               localStreamRef.current.getTracks().forEach(track => track.stop())
@@ -286,9 +286,9 @@ export default function VideoCallModal({ chat, onClose }: VideoCallModalProps) {
               peerConnectionRef.current = null
             }
             setIsCallActive(false)
-          }
-        }, 30000)
       }
+    }, 30000)
+  }
     } catch (error) {
       console.error('Error starting call:', error)
       toast.error('Failed to start call')
@@ -305,7 +305,7 @@ export default function VideoCallModal({ chat, onClose }: VideoCallModalProps) {
     if (accept) {
       try {
         console.log('📹 Accepting incoming video call')
-        await initializePeerConnection()
+      await initializePeerConnection()
         
         // Handle the incoming offer
         if (peerConnectionRef.current && incomingCallData.offer) {
@@ -325,7 +325,7 @@ export default function VideoCallModal({ chat, onClose }: VideoCallModalProps) {
           console.log('📹 Answer sent, call should connect')
         }
         
-        setCallStatus('connected')
+      setCallStatus('connected')
       } catch (error) {
         console.error('Error accepting call:', error)
         toast.error('Failed to accept call')
@@ -402,7 +402,7 @@ export default function VideoCallModal({ chat, onClose }: VideoCallModalProps) {
     setCallStatus('ended')
     setIsCallActive(false)
     setIsIncomingCall(false)
-    
+
     console.log('✅ Call cleanup completed')
   }, [socket, callStatus, chat.participants, chat._id, currentUser?._id])
 

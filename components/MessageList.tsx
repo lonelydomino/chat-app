@@ -32,8 +32,8 @@ interface MessageListProps {
 
 const MessageList = forwardRef<HTMLDivElement, MessageListProps>(
   function MessageList({ messages, currentUserId }, ref: ForwardedRef<HTMLDivElement>) {
-    const messagesEndRef = useRef<HTMLDivElement>(null)
-    const { typingUsers } = useSocket()
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const { typingUsers } = useSocket()
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })

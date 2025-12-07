@@ -183,13 +183,13 @@ export default function ProfileView({ userId, onClose, isOwnProfile = false }: P
           {profile.avatar ? (
             <>
               {console.log('Rendering avatar with URL:', profile.avatar)}
-              <img
-                src={profile.avatar}
-                alt={profile.displayName || profile.username}
-                className="w-24 h-24 rounded-full object-cover mx-auto mb-4"
+            <img
+              src={profile.avatar}
+              alt={profile.displayName || profile.username}
+              className="w-24 h-24 rounded-full object-cover mx-auto mb-4"
                 onError={(e) => console.error('Image failed to load:', profile.avatar, e)}
                 onLoad={() => console.log('Image loaded successfully:', profile.avatar)}
-              />
+            />
             </>
           ) : (
             <div className="w-24 h-24 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">

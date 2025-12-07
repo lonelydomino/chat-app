@@ -138,9 +138,9 @@ export default function MessageInput() {
         // until the schema validation is updated
         sendMessage('[Image]', 'image', {
           fileUrl: data.fileUrl,
-          fileName: file.name,
-          fileSize: file.size
-        })
+        fileName: file.name,
+        fileSize: file.size
+      })
 
         toast.success('Image sent successfully!')
       } else if (data.fileType === 'audio') {
@@ -203,7 +203,7 @@ export default function MessageInput() {
       mediaRecorderRef.current.onstop = async () => {
         try {
           // Create audio blob
-          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' })
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' })
           
           // Create a File object from the blob
           const audioFile = new File([audioBlob], `voice-message-${Date.now()}.wav`, { type: 'audio/wav' })
@@ -318,8 +318,8 @@ export default function MessageInput() {
               className="absolute right-2 bottom-2 p-1 text-gray-400 hover:text-gray-600 transition-colors"
               title="Add emoji"
             >
-              <FaceSmileIcon className="w-4 h-4" />
-            </button>
+                            <FaceSmileIcon className="w-4 h-4" />
+          </button>
             
             {/* Emoji picker dropdown */}
             <AnimatePresence>
@@ -384,7 +384,7 @@ export default function MessageInput() {
                   </>
                 ) : (
                   <>
-                    <PaperClipIcon className="w-6 h-6 mx-auto mb-2 text-gray-400" />
+                <PaperClipIcon className="w-6 h-6 mx-auto mb-2 text-gray-400" />
                     <p className="text-sm text-gray-600">Send File</p>
                     <p className="text-xs text-gray-500">Images & Audio (JPG, PNG, WAV, MP3)</p>
                   </>

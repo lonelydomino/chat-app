@@ -149,7 +149,7 @@ export default function Sidebar({ onNewChat, onLogout, user, isConnected }: Side
     } else {
       const otherParticipant = chat.participants.find(p => p._id !== user._id)
       if (otherParticipant) {
-        return (
+      return (
           <UserAvatar 
             user={otherParticipant} 
             size="md" 
@@ -232,7 +232,7 @@ export default function Sidebar({ onNewChat, onLogout, user, isConnected }: Side
                   }}
                   className="hover:opacity-80 transition-opacity"
                 >
-                  {getChatAvatar(chat)}
+                {getChatAvatar(chat)}
                 </button>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
